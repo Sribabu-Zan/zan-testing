@@ -1,0 +1,52 @@
+/* Service dial: component CSS. Every class here starts with zan-dial-. */
+
+/* With motion allowed, the four spreads sit side by side on one track that is
+   as wide as it needs to be, and the scroll scene slides it a stage width per
+   area. --zan-dial-w is the measured stage width, written by the scene on
+   every refresh; 100vw is only the value of the first paint, before anything
+   has been measured. Each plate then gets a transform of its own, a tenth of
+   a stage width per step, which is what gives the band its near layer.
+
+   With reduced motion the scene never builds, nothing is transformed, and the
+   same markup is a plain vertical stack of four full spreads. */
+
+.zan-dial-body {
+  position: relative;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .zan-dial-body {
+    /* clip, not hidden: `hidden` would make this a scroll container and the
+       pin above it would have nothing left to pin against. */
+    overflow-x: clip;
+    /* The spread leaving the stage softens into the edge rather than being
+       cut through a word, the same way the strip's ends do. The band is
+       narrower than the container's gutter, so nothing at rest is touched. */
+    mask-image: linear-gradient(90deg, transparent 0, black 2.5%, black 97.5%, transparent 100%);
+  }
+
+  .zan-dial-track {
+    display: flex;
+    width: max-content;
+    height: 100%;
+    will-change: transform;
+  }
+
+  .zan-dial-slide {
+    flex: none;
+    width: var(--zan-dial-w, 100vw);
+    height: 100%;
+  }
+
+  .zan-dial-plate {
+    will-change: transform;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zan-dial-track {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3.5rem, 6vw, 6rem);
+  }
+}

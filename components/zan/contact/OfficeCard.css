@@ -1,0 +1,93 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Office cards: the reference profile card's pointer tilt and glare, relit
+   for a light page. A soft white glare follows the pointer and a faint brand
+   sheen slides across. No holographic foil, no glow behind the card.
+
+   OfficeCard.tsx writes the --zan-oc-* variables (fine pointer + motion
+   allowed only). Without them every value sits at rest: flat, no glare.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.zan-office {
+  --zan-oc-px: 50%;
+  --zan-oc-py: 50%;
+  --zan-oc-bx: 50%;
+  --zan-oc-by: 50%;
+  --zan-oc-fl: 0.5;
+  --zan-oc-ft: 0.5;
+  --zan-oc-tilt-x: 0deg;
+  --zan-oc-tilt-y: 0deg;
+  --zan-oc-o: 0;
+  position: relative;
+  perspective: 1100px;
+}
+
+.zan-office.is-active {
+  --zan-oc-o: 1;
+}
+
+.zan-office-card {
+  position: relative;
+  z-index: 1;
+  background-color: var(--color-bg);
+  background-image: linear-gradient(
+    152deg,
+    color-mix(in oklab, var(--color-brand-soft) 75%, var(--color-bg)) 0%,
+    var(--color-bg) 58%
+  );
+  transform: rotateX(var(--zan-oc-tilt-x)) rotateY(var(--zan-oc-tilt-y));
+  transition:
+    transform 900ms var(--ease-out-expo),
+    box-shadow 450ms ease;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.04),
+    calc(var(--zan-oc-fl) * 18px - 9px) calc(var(--zan-oc-ft) * 18px + 8px) 38px -20px rgb(0 0 0 / 0.2);
+  will-change: transform;
+}
+
+.zan-office.is-active .zan-office-card {
+  transition: box-shadow 450ms ease;
+}
+
+.zan-office.is-entering .zan-office-card {
+  transition:
+    transform 180ms ease-out,
+    box-shadow 450ms ease;
+}
+
+.zan-office-sheen,
+.zan-office-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity 500ms ease;
+}
+
+.zan-office-sheen {
+  background-image: linear-gradient(
+    115deg,
+    transparent 30%,
+    color-mix(in oklab, var(--color-brand) 6%, transparent) 44%,
+    color-mix(in oklab, var(--color-brand) 10%, transparent) 50%,
+    color-mix(in oklab, var(--color-brand) 6%, transparent) 56%,
+    transparent 70%
+  );
+  background-size: 260% 260%;
+  background-position: var(--zan-oc-bx) var(--zan-oc-by);
+  opacity: var(--zan-oc-o);
+}
+
+.zan-office-glare {
+  background-image: radial-gradient(
+    farthest-corner circle at var(--zan-oc-px) var(--zan-oc-py),
+    rgb(255 255 255 / 0.95) 0%,
+    rgb(255 255 255 / 0.4) 20%,
+    rgb(255 255 255 / 0) 48%
+  );
+  opacity: calc(0.9 * var(--zan-oc-o));
+}
+
+.zan-office-content {
+  position: relative;
+  transform: translate3d(calc(var(--zan-oc-fl) * -6px + 3px), calc(var(--zan-oc-ft) * -6px + 3px), 0);
+}

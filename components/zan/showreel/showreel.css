@@ -1,0 +1,52 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   SHOWREEL (#showreel) — only what Tailwind cannot say: the pinned stage's
+   height, the wordmark's type inside the SVG mask, the one-line / stacked
+   swap, and the reduced-motion band.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* lvh, not svh. The stage is pinned with position: fixed, and on iOS a fixed
+   box is laid out against the large viewport: once the URL bar retracts, a
+   100svh stage stops short of the bottom of the screen and the "full bleed"
+   footage shows a band of page ground under it. */
+.zan-showreel-stage {
+  height: 100vh;
+  height: 100lvh;
+}
+
+/* The knocked-out word. Set once, at a nominal 100 user units: the component
+   measures whatever this produces and fits the nested viewBox to it, so the
+   size on screen comes from the viewBox, never from this number. */
+.zan-showreel-word {
+  font-family: var(--font-hero);
+  font-size: 100px;
+  font-weight: 800;
+  font-stretch: 100%;
+  letter-spacing: -3px; /* -0.03em at the nominal size */
+}
+
+/* One line on wide screens; stacked on narrow ones, where ZANSERVICES across
+   360px would be a hairline. display, not visibility: the layout pass measures
+   whichever branch is rendered. */
+.zan-showreel-word-stack {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  .zan-showreel-word-wide {
+    display: none;
+  }
+  .zan-showreel-word-stack {
+    display: inline;
+  }
+}
+
+/* Reduced motion: nothing is pinned and nothing plays, so the stage is a
+   still band with the poster frame held inside the wordmark. */
+@media (prefers-reduced-motion: reduce) {
+  .zan-showreel-stage {
+    height: clamp(22rem, 58vh, 30rem);
+  }
+  .zan-showreel-copy {
+    padding-block: clamp(2.5rem, 6vh, 4rem);
+  }
+}

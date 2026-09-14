@@ -1,0 +1,26 @@
+/* Logo loop (partners marquee). GSAP moves the groups; this file only fades
+   the edges and lays out the reduced-motion version: one centred, wrapping
+   row of the real logos, echoes hidden. */
+
+.zan-partners-loop {
+  mask-image: linear-gradient(90deg, transparent, var(--color-ink) 6%, var(--color-ink) 94%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zan-partners-loop {
+    mask-image: none;
+  }
+  .zan-partners-track {
+    width: auto;
+    justify-content: center;
+  }
+  .zan-partners-group {
+    flex-shrink: 1;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 1.5rem;
+  }
+  .zan-partners-dup {
+    display: none;
+  }
+}

@@ -1,0 +1,19 @@
+/* About — the scrubbed statement (Apple's "Performance" copy treatment).
+
+   Each word mixes from a faint muted grey to full ink by --zan-ink (0 → 1),
+   which GSAP scrubs word by word. The default is 1, so reduced motion, no-JS
+   and any word GSAP has not reached yet in a revert all read at full ink. */
+
+.zan-about-word {
+  --zan-ink: 1;
+  --zan-word-to: var(--color-ink);
+  color: color-mix(
+    in oklab,
+    var(--zan-word-to) calc(var(--zan-ink) * 100%),
+    color-mix(in oklab, var(--color-muted) 30%, transparent)
+  );
+}
+
+.zan-about-word[data-accent] {
+  --zan-word-to: var(--color-brand-ink);
+}

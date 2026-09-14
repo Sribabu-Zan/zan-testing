@@ -1,0 +1,22 @@
+/* Technology — the morph ring's flip cards. Transforms and opacity are
+   written by TechMorph's frame loop; this is only the hover flip. */
+
+.zan-tech-card {
+  perspective: 800px;
+}
+.zan-tech-card-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.zan-tech-face {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.zan-tech-back {
+  transform: rotateY(180deg);
+}
+@media (hover: hover) and (pointer: fine) {
+  .zan-tech-card:hover .zan-tech-card-inner {
+    transform: rotateY(180deg);
+  }
+}

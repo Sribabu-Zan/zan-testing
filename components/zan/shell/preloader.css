@@ -1,0 +1,147 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Preloader. Static until [data-play] — logo on the page ground, words in
+   their masks, hairline empty — so it holds the first paint however long
+   hydration and the section scenes keep the main thread busy. PreloaderStage
+   sets [data-play] once a frame has actually been painted, and the sequence
+   runs as CSS keyframes (transforms on the compositor, so a busy main thread
+   does not stall them):
+
+     0.20s  words rise out of their masks, 0.28s apart
+     0 → 1.35s  brand hairline fills
+     1.35s  brand panel wipes up over the stage
+     1.79s  stage fades out behind it; 1.84s it stops taking input
+     1.80 → 2.30s  panel carries on up and away
+
+   Failsafe: with no [data-play] (JavaScript never arrived) the stage hides
+   itself after 8s. A separate animation name, so switching to the real
+   sequence starts it fresh rather than inheriting the failsafe's clock.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.zan-pl-root {
+  animation: zan-pl-failsafe 1ms linear 8s both;
+}
+.zan-pl-root[data-play] {
+  animation: zan-pl-gone 1ms linear 2.3s both;
+}
+
+/* The stage goes in two steps, both inside the moment the panel fully covers
+   it (1.79s–1.84s). Opacity first: the compositor runs it alongside the
+   panel's transform, so a busy main thread cannot leave the stage showing
+   under the departing panel. Then visibility, which is main-thread only and
+   is there so the stage stops taking clicks. */
+.zan-pl-root[data-play] .zan-pl-stage {
+  will-change: opacity;
+  animation:
+    zan-pl-stage-fade 0.05s linear 1.79s both,
+    zan-pl-stage-out 1ms linear 1.84s both;
+}
+
+.zan-pl-word {
+  display: block;
+  transform: translateY(120%);
+}
+.zan-pl-root[data-play] .zan-pl-word {
+  animation: zan-pl-word-in 0.8s var(--ease-out-expo) both;
+  animation-delay: calc(0.2s + var(--zan-pl-i, 0) * 0.28s);
+}
+
+.zan-pl-dot {
+  transform: scale(0);
+}
+.zan-pl-root[data-play] .zan-pl-dot {
+  animation: zan-pl-dot-in 0.6s var(--ease-out-expo) both;
+  animation-delay: calc(0.12s + var(--zan-pl-i, 0) * 0.28s);
+}
+
+.zan-pl-bar {
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+.zan-pl-root[data-play] .zan-pl-bar {
+  animation: zan-pl-fill 1.35s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+.zan-pl-panel {
+  transform: translateY(100%);
+}
+.zan-pl-root[data-play] .zan-pl-panel {
+  animation: zan-pl-panel 0.95s linear 1.35s both;
+}
+
+@keyframes zan-pl-word-in {
+  from {
+    transform: translateY(120%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes zan-pl-dot-in {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes zan-pl-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Up to cover (0 → 47%), then on up and away (47% → 100%). */
+@keyframes zan-pl-panel {
+  0% {
+    transform: translateY(100%);
+    animation-timing-function: cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  47% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.87, 0, 0.13, 1);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes zan-pl-stage-fade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes zan-pl-stage-out {
+  from {
+    visibility: visible;
+  }
+  to {
+    visibility: hidden;
+  }
+}
+
+@keyframes zan-pl-gone {
+  from {
+    visibility: visible;
+  }
+  to {
+    visibility: hidden;
+  }
+}
+
+@keyframes zan-pl-failsafe {
+  from {
+    visibility: visible;
+  }
+  to {
+    visibility: hidden;
+  }
+}

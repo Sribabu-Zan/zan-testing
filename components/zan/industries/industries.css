@@ -1,0 +1,58 @@
+/* Industries — the tilted grid's starfield and the intro's scroll cue.
+   Every colour is a token, so all of it follows the region. */
+
+@keyframes zan-ind-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+.zan-ind-star {
+  animation-name: zan-ind-twinkle;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  will-change: opacity;
+}
+
+.zan-ind-line {
+  animation: zan-ind-line 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes zan-ind-line {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(250%);
+  }
+}
+
+.zan-ind-bounce {
+  animation: zan-ind-bounce 1.8s ease-in-out infinite;
+}
+@keyframes zan-ind-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(4px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zan-ind-star,
+  .zan-ind-line,
+  .zan-ind-bounce {
+    animation: none;
+  }
+  .zan-ind-star {
+    opacity: 0.6;
+  }
+}

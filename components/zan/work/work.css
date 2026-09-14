@@ -1,0 +1,173 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Chapter 02 → Partners: the warp portal, the work wall, the case-study panel,
+   the metrics masonry and the two marquees. Only what Tailwind cannot say:
+   keyframes, media-conditioned overrides and custom-property plumbing.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Generated project art ───────────────────────────────────────────────────
+   Each project carries a hue. The art rotates the region's brand by the
+   project's offset from India's violet (262°), so in India it lands on the
+   project's own hue and in the UAE and US it swings around gold / vermilion.
+   Browsers without relative colour syntax get the plain brand. */
+
+.zan-art {
+  --art-shift: 0;
+  --art-a: var(--color-brand);
+  --art-b: var(--color-brand-glow);
+  --art-ink: var(--color-brand-ink);
+  --art-soft: var(--color-brand-soft);
+}
+@supports (color: hsl(from red h s l)) {
+  .zan-art {
+    --art-a: hsl(from var(--color-brand) calc(h + var(--art-shift)) s l);
+    --art-b: hsl(from var(--color-brand-glow) calc(h + var(--art-shift)) s l);
+    --art-ink: hsl(from var(--color-brand-ink) calc(h + var(--art-shift)) s l);
+    --art-soft: hsl(from var(--color-brand-soft) calc(h + var(--art-shift)) s l);
+  }
+}
+
+/* ── Warp portal (Chapter 02) ────────────────────────────────────────────────
+   Motion: a full-height stage that GSAP pins. Reduced motion: a static band. */
+
+.zan-warp-stage {
+  height: 100vh;
+  height: 100svh;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zan-warp-stage {
+    height: auto;
+    min-height: 26rem;
+    padding-block: var(--spacing-section);
+  }
+  .zan-warp-beams,
+  .zan-warp-flash {
+    display: none;
+  }
+}
+
+/* ── Work wall ───────────────────────────────────────────────────────────────
+   Framer writes transform and opacity inline from scroll, which the global
+   MotionConfig does not reach — so reduced motion flattens the wall here: no
+   tilt, no drift, and the three rows reflow into one grid. */
+
+.zan-wall {
+  height: 170vh;
+}
+@media (min-width: 1024px) {
+  .zan-wall {
+    height: 232vh;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zan-wall {
+    height: auto;
+    padding-bottom: var(--spacing-section);
+  }
+  .zan-wall-plane {
+    transform: none !important;
+    opacity: 1 !important;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17.5rem), 1fr));
+    gap: 1.25rem;
+    width: min(100% - 2.5rem, 82.5rem);
+    margin-inline: auto;
+  }
+  .zan-wall-row {
+    display: contents !important;
+    transform: none !important;
+  }
+  .zan-wall-card {
+    width: auto !important;
+  }
+}
+
+/* ── Scroll-expand panel (case studies) ──────────────────────────────────────
+   The panel is always laid out full-bleed; a clip-path reveals it from an
+   inset rounded card to the full width, so nothing reflows while it grows.
+   The shadow and hairline ride the same custom properties outside the clip. */
+
+.zan-expand {
+  --expand-inset: 0.75rem;
+  --expand-radius: 1.75rem;
+}
+@media (min-width: 1024px) {
+  .zan-expand {
+    --expand-inset: clamp(1.5rem, 6vw, 7rem);
+    --expand-radius: 2rem;
+  }
+}
+.zan-expand-panel {
+  clip-path: inset(0 var(--expand-inset) round var(--expand-radius));
+}
+.zan-expand-shadow,
+.zan-expand-outline {
+  position: absolute;
+  inset-block: 0;
+  left: var(--expand-inset);
+  right: var(--expand-inset);
+  border-radius: var(--expand-radius);
+  pointer-events: none;
+}
+.zan-expand-shadow {
+  box-shadow: var(--shadow-float);
+}
+.zan-expand-outline {
+  z-index: 1;
+  border: 1px solid var(--color-line);
+}
+
+/* ── Case-study list ─────────────────────────────────────────────────────────
+   The cursor preview is for a desktop mouse with motion allowed. Everywhere
+   else the image sits inline in the opened row instead. */
+
+.zan-case-preview {
+  display: none;
+}
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .zan-case-preview {
+    display: block;
+  }
+  .zan-case-inline-media {
+    display: none;
+  }
+}
+
+/* ── Text marquee (metrics) ───────────────────────────────────────────────── */
+
+.zan-metrics-marquee {
+  mask-image: linear-gradient(90deg, transparent, var(--color-ink) 9%, var(--color-ink) 91%, transparent);
+}
+.zan-metrics-marquee-track {
+  animation: zan-metrics-marquee 140s linear infinite;
+}
+.zan-metrics-marquee:hover .zan-metrics-marquee-track,
+.zan-metrics-marquee[data-paused] .zan-metrics-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes zan-metrics-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zan-metrics-marquee {
+    mask-image: none;
+  }
+  .zan-metrics-marquee-track {
+    animation: none;
+    width: auto;
+  }
+  .zan-metrics-marquee-list {
+    flex-shrink: 1;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 0.75rem;
+  }
+  .zan-metrics-marquee-dup {
+    display: none;
+  }
+}

@@ -1,0 +1,54 @@
+/* ScrollFloat: the reference's per-letter "stretch and rise".
+
+   The word is a mask (overflow: hidden). Each glyph starts below it,
+   stretched tall and pinched narrow, and rises into place: driven by scroll
+   from the owning scene (default), or by the CSS entrance below for a word
+   that is on screen at load (.scroll-float-load). Reduced motion collapses
+   the CSS entrance to its last frame (globals.css); no JS shows every
+   [data-reveal] at rest (layout.tsx).
+
+   Two elements per letter: the outer .scroll-float-char is left free for a
+   scroll-driven exit ([data-float-char]); the inner .scroll-float-glyph
+   carries the entrance ([data-float-glyph]). Keeping them apart means the
+   two animations never fight over one transform. */
+
+.scroll-float {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: top;
+  /* Room for the glyphs' overshoot, without shifting the line box. */
+  padding-block: 0.08em 0.12em;
+  margin-block: -0.08em -0.12em;
+}
+
+.scroll-float-char {
+  display: inline-block;
+}
+
+.scroll-float-glyph {
+  display: inline-block;
+  transform-origin: 50% 0%;
+}
+
+.scroll-float-load .scroll-float-glyph {
+  animation: scroll-float-in 1.3s var(--ease-out-expo) both;
+}
+
+/* A gradient on transformed children cannot be clipped by the parent, so
+   each glyph carries its own slice of one word-wide gradient. */
+.scroll-float-gradient {
+  background-size: calc(var(--n) * 100%) 100%;
+  background-position: calc(var(--i) / max(var(--n) - 1, 1) * 100%) 0;
+}
+
+@keyframes scroll-float-in {
+  from {
+    opacity: 0;
+    transform: translateY(120%) scaleY(2.3) scaleX(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

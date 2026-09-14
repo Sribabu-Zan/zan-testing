@@ -1,0 +1,426 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ZAN SERVICES — company page. LIGHT THEME ONLY.
+
+   The palette is the production site's (zan_webdevelopment/src/app/globals.css)
+   region by region, so this page and zanservices.com read as one brand:
+
+     India  violet     :root (default)
+     UAE    gold       html[data-region="ae"]
+     US     vermilion  html[data-region="us"]
+
+   The accent is deliberately split in two:
+     --color-brand      the FILL — as bright as the brand really is. Never text.
+     --color-brand-ink  the same hue, taken down until it reads on white.
+   Anything sitting ON a brand fill uses --color-on-brand: white in India,
+   near-black in the UAE and US. A hard-coded #fff there fails contrast on gold.
+
+   Components use tokens only. For translucency use Tailwind's modifier
+   (bg-brand/20) or color-mix(in oklab, var(--color-brand) 20%, transparent) —
+   never `${hex}55`, which is invalid CSS once the colour is a variable.
+   WebGL cannot read var(): use useBrandPalette() from @/lib/region.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* Neutrals (India) */
+  --color-bg: #ffffff;
+  --color-surface: #f8f8fb;
+  --color-surface-2: #f1f1f7;
+  --color-ink: #121016;
+  --color-ink-2: #64616f;
+  --color-muted: #6f6c7b; /* 4.54:1 on surface-2, its darkest ground */
+  --color-line: #e7e5ee;
+  --color-line-strong: #d5d2e0;
+
+  /* Accent (India) */
+  --color-brand: #7c3aed; /* fill. white on it = 5.70:1 */
+  --color-brand-ink: #6d28d9; /* 7.10:1 on white */
+  --color-brand-ink-2: #9333ea; /* text-gradient far stop, 5.38:1 on white */
+  --color-brand-from: #9333ea;
+  --color-brand-to: #6d28d9;
+  --color-brand-glow: #a78bfa;
+  --color-brand-dark: #5b21b6;
+  --color-brand-soft: #f0e9fe;
+  --color-on-brand: #ffffff;
+
+  /* The one warm neutral: the paper panel carried over from the reference
+     deck. Same in every region — it is paper, not accent. */
+  --color-paper: #f5f0e8;
+
+  --color-danger: #c02617;
+  --color-success: #1c6f4c;
+
+  /* WhatsApp buttons. Third-party brand green, taken down from #25d366 (white
+     on it is 1.98:1) to a shade white text passes on: 5.02:1. */
+  --color-whatsapp: #15803d;
+  --color-whatsapp-hover: #166534;
+
+  --font-sans:
+    var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: var(--font-cinzel), "Iowan Old Style", Georgia, serif;
+  /* The hero headline (font-hero). Bricolage Grotesque: variable wght/wdth/opsz. */
+  --font-hero: var(--font-bricolage), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+
+  /* Type scale — the production site's, plus `giant` for the reference's
+     chapter labels and deck headlines. */
+  --text-giant: clamp(2.75rem, 1.2rem + 7.4vw, 9rem);
+  --text-giant--line-height: 0.9;
+  --text-giant--letter-spacing: -0.035em;
+  --text-giant--font-weight: 700;
+
+  --text-display: clamp(2.5rem, 1.05rem + 6.45vw, 5.25rem);
+  --text-display--line-height: 0.98;
+  --text-display--letter-spacing: -0.012em;
+  --text-display--font-weight: 600;
+
+  --text-h1: clamp(2.125rem, 1.36rem + 3.4vw, 3.75rem);
+  --text-h1--line-height: 1.04;
+  --text-h1--letter-spacing: -0.008em;
+  --text-h1--font-weight: 600;
+
+  --text-h2: clamp(1.625rem, 1.25rem + 1.67vw, 2.5rem);
+  --text-h2--line-height: 1.1;
+  --text-h2--letter-spacing: -0.004em;
+  --text-h2--font-weight: 600;
+
+  --text-h3: clamp(1.1875rem, 1.04rem + 0.65vw, 1.5rem);
+  --text-h3--line-height: 1.25;
+  --text-h3--letter-spacing: -0.018em;
+  --text-h3--font-weight: 500;
+
+  --text-lead: clamp(1.0625rem, 0.98rem + 0.37vw, 1.25rem);
+  --text-lead--line-height: 1.6;
+  --text-lead--letter-spacing: -0.011em;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.65;
+
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.55;
+
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1;
+  --text-eyebrow--letter-spacing: 0.16em;
+  --text-eyebrow--font-weight: 500;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-cinema: cubic-bezier(0.76, 0, 0.24, 1);
+
+  --shadow-lift: 0 1px 2px rgb(17 16 22 / 0.04), 0 8px 24px -8px rgb(17 16 22 / 0.08);
+  --shadow-nav: 0 1px 0 rgb(17 16 22 / 0.04), 0 8px 32px -16px rgb(17 16 22 / 0.12);
+  --shadow-float:
+    0 2px 4px rgb(17 16 22 / 0.04), 0 24px 48px -12px rgb(17 16 22 / 0.14),
+    0 64px 120px -40px rgb(17 16 22 / 0.2);
+
+  /* py-section, pt-nav, top-nav, scroll-mt-nav … */
+  --spacing-section: clamp(5rem, 3.5rem + 7vw, 10rem);
+  --spacing-nav: 4.5rem;
+}
+
+/* ── Regions ────────────────────────────────────────────────────────────────
+   Unlayered, so they win over Tailwind's theme layer whatever the order. The
+   contrast figures are the production site's, measured there. */
+
+html[data-region="ae"] {
+  --color-surface: #fbf9f3;
+  --color-surface-2: #f5f1e5;
+  --color-ink: #17130a;
+  --color-ink-2: #6c6552;
+  --color-muted: #756d5a;
+  --color-line: #ece6d5;
+  --color-line-strong: #ded4bd;
+
+  --color-brand: #ffc400; /* ink on it = 11.59:1 */
+  --color-brand-ink: #8b6904; /* 5.10:1 on white */
+  --color-brand-ink-2: #5f4802;
+  --color-brand-from: #ffd60a;
+  --color-brand-to: #f59e0b;
+  --color-brand-glow: #ffd60a;
+  --color-brand-dark: #8b6904;
+  --color-brand-soft: #fff4cc;
+  --color-on-brand: #17130a;
+}
+
+html[data-region="us"] {
+  --color-surface: #fdf8f6;
+  --color-surface-2: #f8efe9;
+  --color-ink: #160f0c;
+  --color-ink-2: #6d5b53;
+  --color-muted: #7d6a61;
+  --color-line: #f0e4dd;
+  --color-line-strong: #e2cfc4;
+
+  --color-brand: #ff5a1f; /* ink on it = 6.15:1 */
+  --color-brand-ink: #b8420a; /* 5.49:1 on white */
+  --color-brand-ink-2: #7d2a05;
+  --color-brand-from: #ff7a45;
+  --color-brand-to: #f2470f;
+  --color-brand-glow: #ff8f5e;
+  --color-brand-dark: #b8420a;
+  --color-brand-soft: #ffe8dd;
+  --color-on-brand: #1a0b06;
+}
+
+/* shadcn tokens, pointed at the Zan palette so any leftover primitive renders
+   on-brand. `--color-muted` is NOT remapped: here it is Zan's text grey. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-heading: var(--font-display);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: var(--color-bg);
+  --foreground: var(--color-ink);
+  --card: var(--color-bg);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-bg);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-brand);
+  --primary-foreground: var(--color-on-brand);
+  --secondary: var(--color-surface);
+  --secondary-foreground: var(--color-ink);
+  --muted-foreground: var(--color-muted);
+  --accent: var(--color-brand-soft);
+  --accent-foreground: var(--color-brand-ink);
+  --destructive: var(--color-danger);
+  --border: var(--color-line);
+  --input: var(--color-line-strong);
+  --ring: var(--color-brand-ink);
+  --radius: 0.75rem;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-line);
+  }
+
+  html {
+    /* framer-motion's useScroll({ target }) measures against the document
+       scroller and warns (and can mis-measure) while <html> is static. A
+       relative root changes nothing else: fixed elements and GSAP pins are
+       still placed against the viewport. */
+    position: relative;
+    scroll-behavior: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    /* clip, not hidden: `hidden` makes body a scroll container on some
+       engines and silently breaks position: sticky underneath it. */
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-brand-soft);
+    color: var(--color-brand-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-ink);
+    outline-offset: 3px;
+  }
+}
+
+/* The OS cursor is hidden only while the custom cursor is actually mounted —
+   MouseFollower adds .zan-cursor to <html>. Touch, reduced motion, or a
+   failed chunk load all keep the normal pointer. */
+html.zan-cursor,
+html.zan-cursor body,
+html.zan-cursor a,
+html.zan-cursor button,
+html.zan-cursor [role="button"],
+html.zan-cursor [data-cursor] {
+  cursor: none;
+}
+html.zan-cursor input,
+html.zan-cursor textarea,
+html.zan-cursor select {
+  cursor: text;
+}
+
+/* Hidden scrollbar, as on the reference. ScrollProgress stands in for it. */
+html,
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* ── Utilities ────────────────────────────────────────────────────────────── */
+
+@utility container-zan {
+  width: 100%;
+  max-width: 82.5rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 0.6rem + 2.8vw, 3rem);
+}
+
+/* Paper grain over everything. Multiply keeps it a darkening on white rather
+   than the grey haze `normal` blending leaves. */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+.bg-brand-gradient {
+  background-image: linear-gradient(
+    115deg,
+    var(--color-brand-from) 0%,
+    var(--color-brand-to) 55%,
+    var(--color-brand-from) 100%
+  );
+  /* Oversized so the wash can travel on hover. Both stops are the same two
+     colours, so nothing slides to an illegible value mid-transition. */
+  background-size: 200% 100%;
+  background-position: 0% 0;
+}
+/* The travelling wash is a button affordance. Scoped to interactive
+   elements: on a full-screen panel or curtain it would shift the whole
+   screen's colour whenever the pointer rested on it. */
+:is(a, button, [role="button"]).bg-brand-gradient {
+  transition: background-position 0.6s var(--ease-smooth);
+}
+:is(a, button, [role="button"]).bg-brand-gradient:hover {
+  background-position: 100% 0;
+}
+
+/* Text gradient between the two TEXT-SAFE stops. The fill stops measure
+   ~1.4:1 on white in the UAE, so they are never used for type. */
+.text-brand-gradient {
+  color: var(--color-brand-ink);
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .text-brand-gradient {
+    background-image: linear-gradient(
+      135deg,
+      var(--color-brand-ink-2) 0%,
+      var(--color-brand-ink) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+.bg-brand-wash {
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--color-brand-from) 7%, var(--color-bg)) 0%,
+    color-mix(in oklab, var(--color-brand-to) 4%, var(--color-bg)) 100%
+  );
+}
+
+.bg-brand-veil {
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--color-brand-from) 16%, var(--color-bg)) 0%,
+    color-mix(in oklab, var(--color-brand-to) 9%, var(--color-bg)) 100%
+  );
+}
+
+.border-brand-gradient-t {
+  border-top: 1px solid transparent;
+  border-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--color-brand-from) 22%,
+      var(--color-brand-to) 78%,
+      transparent 100%
+    )
+    1;
+}
+
+/* Aceternity spotlight sweep, kept for the brand-tinted light moments. */
+@keyframes spotlight {
+  0% {
+    opacity: 0;
+    transform: translate(-72%, -62%) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -40%) scale(1);
+  }
+}
+.animate-spotlight {
+  animation: spotlight 2s ease 0.75s 1 forwards;
+}
+
+/* ── Lenis ────────────────────────────────────────────────────────────────── */
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────────
+   This only stops CSS animation and transitions. GSAP pins and scrubs,
+   framer-motion, Lenis and canvas loops each gate themselves in JS. */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

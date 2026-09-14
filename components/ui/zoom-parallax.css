@@ -1,0 +1,153 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Zoom parallax — the reference's sticky zoom collage.
+
+   Each frame sits in its own full-stage layer; GSAP scales the LAYER about the
+   stage centre, so frames away from the centre fly outward as they grow while
+   the centre frame (the portal) grows until it fills the screen.
+
+   Geometry comes from inline custom properties, per breakpoint:
+     --sx/--sy/--sw/--sh   phones and tablets (vw / svh)
+     --lx/--ly/--lw/--lh   ≥1024px
+   The portal's content is laid out at full screen size and scaled down by the
+   frame's fraction of the screen (--pis / --pil), so at the end of the zoom it
+   is back at 1:1 — crisp, and a real page.
+
+   Reduced motion: the same DOM becomes a static grid (no sticky, no zoom), the
+   portal a readable card at natural size.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.zan-zoom {
+  position: relative;
+  height: 210svh;
+}
+
+.zan-zoom-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.zan-zoom-layer {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  pointer-events: none;
+}
+
+.zan-zoom-frame {
+  position: absolute;
+  left: calc(50% + var(--sx));
+  top: calc(50% + var(--sy));
+  width: var(--sw);
+  height: var(--sh);
+  translate: -50% -50%;
+  overflow: hidden;
+  border-radius: 1rem;
+  background-color: var(--color-surface-2);
+  box-shadow:
+    0 2px 4px rgb(0 0 0 / 0.04),
+    0 20px 44px -18px rgb(0 0 0 / 0.22);
+}
+
+.zan-zoom-portal {
+  background-color: var(--color-bg);
+  pointer-events: auto;
+}
+
+/* The hairline, drawn inside so it can fade as the portal fills the screen. */
+.zan-zoom-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  pointer-events: none;
+}
+
+.zan-zoom-portal-inner {
+  --zan-portal-top: calc(var(--spacing-nav) + 3svh);
+  width: 100vw;
+  height: 100svh;
+  transform: scale(var(--pis));
+  transform-origin: 0 0;
+}
+
+@media (min-width: 1024px) {
+  .zan-zoom {
+    height: 300vh;
+  }
+  .zan-zoom-frame {
+    left: calc(50% + var(--lx));
+    top: calc(50% + var(--ly));
+    width: var(--lw);
+    height: var(--lh);
+  }
+  .zan-zoom-portal-inner {
+    transform: scale(var(--pil));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zan-zoom {
+    height: auto;
+    padding-block: 1rem 2rem;
+  }
+  .zan-zoom-stage {
+    position: relative;
+    height: auto;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 82.5rem;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 0.6rem + 2.8vw, 3rem);
+  }
+  .zan-zoom-layer {
+    display: contents;
+  }
+  .zan-zoom-frame {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: auto;
+    height: auto;
+    translate: none;
+    aspect-ratio: 4 / 3;
+  }
+  .zan-zoom-portal {
+    grid-column: 1 / -1;
+    order: -1;
+    aspect-ratio: auto;
+    border-radius: 1.5rem;
+  }
+  /* 100% of the grid area on desktop (where the portal spans three rows);
+     resolves to auto on phones, where its row sizes to it. */
+  .zan-zoom-portal-inner {
+    --zan-portal-top: 2.25rem;
+    width: 100%;
+    height: 100%;
+    transform: none;
+  }
+
+  @media (min-width: 1024px) {
+    .zan-zoom-stage {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+      grid-auto-flow: dense;
+      gap: 1rem;
+    }
+    .zan-zoom-portal {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+      order: 0;
+    }
+    .zan-zoom-frame[data-side="a"] {
+      grid-column: 1;
+    }
+    .zan-zoom-frame[data-side="b"] {
+      grid-column: 3;
+    }
+  }
+}

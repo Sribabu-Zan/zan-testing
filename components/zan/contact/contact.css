@@ -1,0 +1,18 @@
+/* Contact: the light behind the heading. */
+
+/* The static layer: a quiet linear wash of the brand's pale tint at the top
+   edge. It is all there is on mobile, with reduced motion, or without WebGL. */
+.zan-contact-veil {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--color-brand-soft) 80%, transparent) 0%,
+    transparent 55%
+  );
+}
+
+/* The rays fade out well before they reach the form. */
+.zan-contact-rays {
+  opacity: 0.7;
+  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 0%, rgb(0 0 0 / 1) 20%, rgb(0 0 0 / 0) 80%);
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 0%, rgb(0 0 0 / 1) 20%, rgb(0 0 0 / 0) 80%);
+}
