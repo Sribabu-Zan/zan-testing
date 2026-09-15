@@ -136,7 +136,7 @@ Put component-specific CSS (keyframes and anything else Tailwind cannot express)
 
 ## How to verify
 
-The dev server is already running at http://localhost:5174 (`next dev`, HMR).
+The dev server is already running at http://localhost:5173 (`next dev`, HMR).
 - Do not start or stop servers.
 - Do not run `next build`.
 

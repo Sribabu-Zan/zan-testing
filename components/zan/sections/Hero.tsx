@@ -165,7 +165,7 @@ export function Hero() {
           <div
             key={m.id}
             className={
-              "flex flex-col-reverse items-center gap-1 px-2 lg:items-start " +
+              "flex flex-col-reverse items-center justify-end gap-1 px-2 lg:items-start " +
               (i > 0 ? "border-l border-line lg:pl-5" : "lg:pl-0")
             }
           >

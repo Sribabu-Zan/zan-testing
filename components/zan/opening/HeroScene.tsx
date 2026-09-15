@@ -6,7 +6,6 @@ import { useGSAP } from "@gsap/react";
 import { gsap, MQ } from "@/lib/gsap";
 import { useRegionId } from "@/lib/region";
 import { MarkStage } from "./MarkStage";
-import { RoamingUfo } from "./RoamingUfo";
 import { STAR_LAYERS } from "./sky";
 import { UaeFlyer } from "./UaeFlyer";
 import { GridField } from "./GridField";
@@ -152,13 +151,11 @@ export function HeroScene({ children }: { children: ReactNode }) {
         {region === "ae" && <UaeFlyer />}
       </div>
 
-      {/* Phones and tablets: the roaming UFO stands in for the 3D mark. */}
-      <div aria-hidden="true" data-depth="ufo" className="pointer-events-none absolute inset-0 z-10 lg:hidden">
-        <RoamingUfo />
-      </div>
-
       <div className="container-zan relative z-20 grid flex-1 content-center items-center gap-y-10 pt-nav pb-12 lg:grid-cols-12 lg:gap-x-8 lg:pb-16">
-        <div data-depth="copy" data-hero-copy className="min-w-0 pt-8 text-center sm:pt-10 lg:col-span-7 lg:pt-6 lg:text-left">
+        {/* Below lg the copy clears the astronaut, which sits in the top-right
+            corner under the navbar: the padding is the astronaut's height plus
+            a gap, so the badge can never start beside it. */}
+        <div data-depth="copy" data-hero-copy className="min-w-0 pt-[5.75rem] text-center sm:pt-[7rem] lg:col-span-7 lg:pt-6 lg:text-left">
           {children}
         </div>
         <div data-depth="mark" className="relative hidden lg:col-span-5 lg:block">
@@ -182,11 +179,13 @@ export function HeroScene({ children }: { children: ReactNode }) {
         </div>
       </div>
 
-      {/* Astronaut: top right, mirrored, drifting; the closest layer. */}
+      {/* Astronaut: top right, mirrored, drifting; the closest layer. On phones
+          and tablets it takes the corner under the navbar, small enough that
+          the copy's top padding keeps it clear of the badge and headline. */}
       <div
         aria-hidden="true"
         data-depth="astro"
-        className="zan-hero-astro pointer-events-none absolute top-[calc(var(--spacing-nav)+0.5rem)] right-[8vw] z-30 hidden w-36 lg:block xl:w-40"
+        className="zan-hero-astro pointer-events-none absolute top-[calc(var(--spacing-nav)+0.25rem)] right-4 z-30 w-[4.5rem] sm:right-8 sm:w-24 lg:top-[calc(var(--spacing-nav)+0.5rem)] lg:right-[8vw] lg:w-36 xl:w-40"
       >
         <div data-drift="-26">
           <div data-reveal data-in="astro" className="zan-hero-in" style={{ "--zan-d": 2 } as CSSProperties}>
@@ -196,7 +195,7 @@ export function HeroScene({ children }: { children: ReactNode }) {
                 alt=""
                 width={500}
                 height={500}
-                sizes="(min-width: 1280px) 11rem, 10rem"
+                sizes="(min-width: 1280px) 10rem, (min-width: 1024px) 9rem, (min-width: 640px) 6rem, 4.5rem"
                 className="h-auto w-full -scale-x-100 select-none"
                 draggable={false}
               />

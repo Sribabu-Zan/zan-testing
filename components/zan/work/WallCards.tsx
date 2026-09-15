@@ -35,7 +35,7 @@ export function CaseCard({ project }: { project: Project }) {
             src={project.screenshot.src}
             alt=""
             fill
-            sizes="(min-width: 1024px) 26vw, 15.5rem"
+            sizes="(min-width: 1024px) 26vw, (min-width: 768px) 19.5rem, 76vw"
             className="object-cover transition-transform duration-700 ease-out-expo group-hover/card:scale-[1.05]"
           />
         ) : (
@@ -71,8 +71,8 @@ export function CaseCard({ project }: { project: Project }) {
           <span className="max-w-[15ch] pb-0.5 text-[0.8125rem] leading-tight text-ink-2 lg:text-small">{lead.metric}</span>
         </p>
         <div className="min-w-0">
-          <h3 className="line-clamp-2 text-[0.9375rem] font-semibold leading-snug lg:line-clamp-1 lg:text-body">{project.name}</h3>
-          <p className="mt-0.5 line-clamp-1 text-[0.8125rem] text-muted">
+          <h3 className="line-clamp-2 text-[0.9375rem] font-semibold leading-snug lg:text-body">{project.name}</h3>
+          <p className="mt-0.5 line-clamp-2 text-[0.8125rem] text-muted">
             {project.discipline} · {project.industry}
           </p>
         </div>
@@ -92,7 +92,7 @@ export function ClientCard({ client }: { client: Client }) {
           src={client.src}
           alt=""
           fill
-          sizes="(min-width: 1024px) 22vw, 13rem"
+          sizes="(min-width: 1024px) 22vw, (min-width: 768px) 17rem, 66vw"
           className="scale-[1.2] object-contain transition-[scale] duration-700 ease-out-expo group-hover/card:scale-[1.28]"
         />
       </div>

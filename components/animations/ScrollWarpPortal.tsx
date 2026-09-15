@@ -152,13 +152,17 @@ export function ScrollWarpPortal({
           tl.to(labelRef.current, { scale: 1, opacity: 1, duration: 0.15, ease: "power2.out" }, 0);
 
           // …then drifts forward and dissolves while the frames rush past.
-          tl.to(labelRef.current, { scale: 1.18, opacity: 0, duration: 0.17, ease: "power2.in" }, 0.78);
-          tl.to(haloRef.current, { scale: 2.8, opacity: 0, duration: 0.17, ease: "power2.in" }, 0.78);
-          tl.to(beamEls, { opacity: 0, duration: 0.14, ease: "power2.in" }, 0.78);
+          // The label, halo and beams leave in the last stretch, overlapping the
+          // flash, so the stage is never empty while the pin is still holding.
+          tl.to(labelRef.current, { scale: 1.18, opacity: 0, duration: 0.12, ease: "power2.in" }, 0.87);
+          tl.to(haloRef.current, { scale: 2.8, opacity: 0, duration: 0.12, ease: "power2.in" }, 0.87);
+          tl.to(beamEls, { opacity: 0, duration: 0.1, ease: "power2.in" }, 0.88);
 
           // Fade to the page ground right at the end, so it overlaps the work
           // wall's arrival instead of leaving a blank white beat in the pin.
-          tl.to(flashRef.current, { opacity: 1, duration: 0.14, ease: "power2.in" }, 0.86);
+          // Only in the last few per cent, so the flash is a hand-off and never a
+          // full blank white screen held while the visitor keeps scrolling.
+          tl.to(flashRef.current, { opacity: 1, duration: 0.05, ease: "power1.in" }, 0.95);
         },
       );
 

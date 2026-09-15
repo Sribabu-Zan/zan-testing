@@ -8,7 +8,8 @@ import { processSteps } from "@/constants/zan";
 import { gsap, MQ, ScrollTrigger } from "@/lib/gsap";
 import { cn } from "@/lib/utils";
 import { StepCard } from "./StepCard";
-import { useMediaQuery, useWebGL } from "./useMediaQuery";
+import { MobileStage } from "./MobileStage";
+import { useCapableGPU, useMediaQuery, useWebGL } from "./useMediaQuery";
 import type { ProcessProgress } from "./LaptopCanvas";
 
 const LaptopCanvas = dynamic(() => import("./LaptopCanvas"), { ssr: false, loading: () => null });
@@ -172,13 +173,19 @@ function Timeline() {
 }
 
 /**
- * Desktop with motion and WebGL: the pinned laptop. Phones, reduced motion
- * and browsers without WebGL: the same four stages as a timeline. The server
- * renders the timeline, so the stages are always in the HTML.
+ * - Reduced motion: the four stages as a static timeline, no pin, no spin.
+ * - Desktop with WebGL: the pinned laptop with the boxes around it (desktop
+ *   without WebGL keeps the timeline).
+ * - Below 1024px: the laptop pinned at the top, turning once per card
+ *   (3D on a hardware GPU, CSS 3D otherwise).
+ * The server renders the timeline, so the stages are always in the HTML.
  */
 export function ProcessStage() {
   const desktop = useMediaQuery(MQ.desktop);
   const motionOK = useMediaQuery(MQ.motion);
   const webgl = useWebGL();
-  return desktop && motionOK && webgl ? <PinnedStage /> : <Timeline />;
+  const gpu = useCapableGPU();
+  if (!motionOK) return <Timeline />;
+  if (desktop) return webgl ? <PinnedStage /> : <Timeline />;
+  return <MobileStage webgl={gpu} />;
 }

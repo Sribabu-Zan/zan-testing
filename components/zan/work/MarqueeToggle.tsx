@@ -30,7 +30,7 @@ export function MarqueeToggle({
       title={paused ? "Play" : "Pause"}
       onClick={onToggle}
       className={cn(
-        "inline-grid size-9 shrink-0 place-items-center rounded-full border border-line-strong bg-bg text-ink-2",
+        "inline-grid size-11 shrink-0 place-items-center rounded-full border border-line-strong bg-bg text-ink-2 md:size-9",
         "transition-colors duration-300 hover:border-ink hover:text-ink motion-reduce:hidden",
         className,
       )}

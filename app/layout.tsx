@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Cinzel, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SmoothScrollProvider } from "@/components/animations/SmoothScrollProvider";
-import { MouseFollower } from "@/components/animations/MouseFollower";
 import { Providers } from "@/components/zan/Providers";
 import { ScrollRefresh } from "@/components/zan/ScrollRefresh";
 import { Preloader } from "@/components/zan/shell/Preloader";
@@ -93,7 +92,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <ScrollRefresh />
           <SmoothScrollProvider>
             <RouteChange />
-            <MouseFollower />
             <Navbar />
             {children}
             <Footer />

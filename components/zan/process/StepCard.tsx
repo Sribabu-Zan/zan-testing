@@ -11,6 +11,7 @@ export function StepCard({
   illustration = false,
   active = false,
   dim = false,
+  compact = false,
   className,
 }: {
   step: ProcessStep;
@@ -19,12 +20,15 @@ export function StepCard({
   active?: boolean;
   /** A stage already passed. */
   dim?: boolean;
+  /** Tighter padding, for the card under the phone laptop. */
+  compact?: boolean;
   className?: string;
 }) {
   return (
     <article
       className={cn(
-        "rounded-3xl border bg-bg p-6 transition-[box-shadow,border-color] duration-500 ease-out-expo",
+        "min-w-0 rounded-3xl border bg-bg transition-[box-shadow,border-color] duration-500 ease-out-expo",
+        compact ? "p-4 sm:p-6" : "p-6",
         active ? "border-brand/40 shadow-float" : "border-line shadow-lift",
         className,
       )}

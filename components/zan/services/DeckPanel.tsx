@@ -73,8 +73,11 @@ export function DeckPanelBody({
   lead,
   accentLast = false,
   extra,
+  center = false,
   children,
 }: {
+  /** Centre the content block in the slab (a panel shorter than the screen). */
+  center?: boolean;
   tone: DeckTone;
   eyebrow: string;
   meta?: string;
@@ -93,6 +96,7 @@ export function DeckPanelBody({
   return (
     <div
       data-tone={tone}
+      data-center={center || undefined}
       // --zan-deck-lines lets deck.css divide the screen's height budget by
       // the number of phrases, so a three-line headline sets smaller type
       // than a two-line one instead of overrunning the panel.
@@ -178,13 +182,15 @@ export function PracticeGrid({ practice, tone }: { practice: Practice; tone: Dec
   return (
     <ul className="zan-deck-grid" style={gridColumns(practice.items.length)}>
       {practice.items.map((item, i) => (
-        <li key={item.id} className={`zan-deck-card border-t ${t.rule}`}>
+        <li key={item.id} className={`zan-deck-card relative border-t ${t.rule}`}>
           <ServicePlate id={item.id} />
           <div className="zan-deck-body">
             <h3 className="zan-deck-title text-h3 font-semibold">
               <SiteLink
                 href={item.href}
-                className="group/link inline-flex items-baseline gap-1.5 decoration-1 underline-offset-4 hover:underline"
+                // On phones the link's tap area stretches over the whole row, plate
+                // included: the title alone is only 24px tall.
+                className="group/link inline-flex items-baseline gap-1.5 decoration-1 underline-offset-4 hover:underline max-md:after:absolute max-md:after:inset-0"
               >
                 {item.title}
                 <ArrowUpRight
@@ -240,7 +246,8 @@ export function WhyUsGrid({ tone }: { tone: DeckTone }) {
           </li>
         ))}
       </ul>
-      <div className="zan-deck-actions mt-auto flex flex-wrap items-center gap-3">
+      {/* The calls to action follow the reasons directly at every width. */}
+      <div className="zan-deck-actions flex flex-wrap items-center gap-3">
         <SiteButtonLink href={ctas.project.href} size="lg">
           {ctas.project.label}
         </SiteButtonLink>

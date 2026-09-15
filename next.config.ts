@@ -6,10 +6,15 @@ import type { NextConfig } from "next";
    of this site is a route under app/, and lib/links.ts resolves content hrefs
    to this origin. This constant exists for the two rewrites at the bottom of
    the file; set NEXT_PUBLIC_MAIN_SITE_URL to "" once the chat endpoints are
-   local and both proxies drop out on their own. */
+   local and both proxies drop out on their own.
+
+   In development this site runs on :5173, so the main app cannot be there too:
+   the default is :3000 (start it with `npm run dev -- -p 3000`). Pointing this
+   at :5173 would proxy the chat API back into this site and every chat call
+   would 404. */
 const MAIN_SITE_URL = (
   process.env.NEXT_PUBLIC_MAIN_SITE_URL ??
-  (process.env.NODE_ENV === "production" ? "https://zanservices.com" : "http://localhost:5173")
+  (process.env.NODE_ENV === "production" ? "https://zanservices.com" : "http://localhost:3000")
 ).replace(/\/+$/, "");
 
 const nextConfig: NextConfig = {

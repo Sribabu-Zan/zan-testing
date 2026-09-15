@@ -34,7 +34,9 @@ const FADE = "linear-gradient(90deg, transparent, black 7%, black 93%, transpare
 
 const tick = (color: string) =>
   `linear-gradient(90deg, transparent calc(50% - 0.5px), ${color} calc(50% - 0.5px), ${color} calc(50% + 0.5px), transparent calc(50% + 0.5px))`;
-const TICKS = `${tick("var(--color-line-strong)")}, ${tick("var(--color-line-strong)")}`;
+/* Minor ticks in the strong hairline, major ticks a step darker so the scale
+   reads as a scale even on a small screen. */
+const TICKS = `${tick("var(--color-line-strong)")}, ${tick("var(--color-muted)")}`;
 
 /** A band of tick marks: a minor tick every 12px, a major one every 60px, centred on the middle. */
 export function RulerLines({ side, className }: { side: "top" | "bottom"; className?: string }) {
@@ -122,15 +124,26 @@ export function RulerStrip({
         role="group"
         aria-label={label}
         onKeyDown={onKeyDown}
-        className="relative h-[1.6em] overflow-clip"
-        style={{ fontSize: wordSize, maskImage: FADE, WebkitMaskImage: FADE }}
+        className="relative h-[max(1.5em,2.75rem)]"
+        // Inline, so the track (several screens wide) is clipped from the
+        // first paint in every browser and never widens the page. The track
+        // is moved by transform only, so this box is never really scrolled;
+        // if focus ever scrolls it, onScroll puts it straight back.
+        style={{ fontSize: wordSize, overflow: "hidden", maskImage: FADE, WebkitMaskImage: FADE }}
+        onScroll={(e) => {
+          e.currentTarget.scrollLeft = 0;
+          e.currentTarget.scrollTop = 0;
+        }}
       >
         <div
           data-ruler-track=""
-          className="absolute inset-y-0 left-1/2 flex w-max items-center gap-[0.5em]"
+          className="absolute inset-y-0 left-1/2 flex w-max items-stretch gap-[0.5em]"
           style={{ transform: `translateX(-${firstCentre}em)` }}
         >
           {items.map((item, i) => (
+            // The button keeps its full size, the height of the band (44px or
+            // more), so every word is a comfortable tap target. Only the
+            // label inside it scales.
             <button
               key={item.id}
               type="button"
@@ -140,12 +153,17 @@ export function RulerStrip({
               aria-controls={controlsOf?.(i)}
               aria-current={i === active ? "true" : undefined}
               onClick={() => onPick(i)}
-              className={`shrink-0 cursor-pointer leading-[0.9] tracking-[-0.035em] whitespace-nowrap transition-colors duration-300 ${wordClassName} ${i === active ? "text-ink" : "text-muted hover:text-ink-2"}`}
-              // First paint only. The scene overwrites these once it runs,
-              // and React never rewrites them because they never change.
-              style={i === 0 ? undefined : { transform: `scale(${RULER_DIM})`, transformOrigin: "0% 50%" }}
+              className={`flex min-h-11 shrink-0 cursor-pointer items-center leading-[1] tracking-[-0.035em] whitespace-nowrap transition-colors duration-300 ${wordClassName} ${i === active ? "text-ink" : "text-muted hover:text-ink-2"}`}
             >
-              {item.label}
+              <span
+                data-ruler-label=""
+                className="block"
+                // First paint only. The scene overwrites these once it runs,
+                // and React never rewrites them because they never change.
+                style={i === 0 ? undefined : { transform: `scale(${RULER_DIM})`, transformOrigin: "0% 50%" }}
+              >
+                {item.label}
+              </span>
             </button>
           ))}
         </div>
@@ -159,6 +177,8 @@ export interface RulerGeometry {
   track: HTMLElement | null;
   ticks: HTMLElement[];
   words: HTMLElement[];
+  /** The scaling label inside each word. */
+  labels: HTMLElement[];
   /** Centre of each word from the track's left edge, in px, at full size. */
   centres: number[];
 }
@@ -170,13 +190,14 @@ export function measureRuler(root: HTMLElement): RulerGeometry {
     track: root.querySelector<HTMLElement>("[data-ruler-track]"),
     ticks: Array.from(root.querySelectorAll<HTMLElement>("[data-ruler-ticks]")),
     words,
+    labels: words.map((w) => w.querySelector<HTMLElement>("[data-ruler-label]") ?? w),
     centres: words.map((w) => w.offsetLeft + w.offsetWidth / 2),
   };
 }
 
 /** Puts fractional position s (0 … n-1) on the centre tick. */
 export function positionRuler(geo: RulerGeometry, s: number) {
-  const { track, ticks, words, centres } = geo;
+  const { track, ticks, labels, centres } = geo;
   const n = centres.length;
   if (!n || !track) return;
   const t = Math.min(Math.max(s, 0), n - 1);
@@ -185,7 +206,7 @@ export function positionRuler(geo: RulerGeometry, s: number) {
 
   track.style.transform = `translate3d(${-c}px, 0, 0)`;
   for (const band of ticks) band.style.backgroundPositionX = `calc(50% - ${c}px), calc(50% - ${c}px)`;
-  words.forEach((w, k) => {
+  labels.forEach((w, k) => {
     const d = k - t;
     w.style.transformOrigin = d > 0 ? "0% 50%" : "100% 50%";
     w.style.transform = `scale(${1 - (1 - RULER_DIM) * Math.min(1, Math.abs(d))})`;

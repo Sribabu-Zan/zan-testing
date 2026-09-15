@@ -1,0 +1,111 @@
+/* The CSS laptop: the phone fallback when WebGL is missing or software-rendered,
+   and the placeholder while the 3D model loads. Turned by --proc-yaw and
+   --proc-pitch, which the scroll scene writes on the pinned stage. */
+
+.zan-proc-css {
+  container-type: size;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  perspective: 1600px;
+  transition: opacity 0.5s var(--ease-out-expo, ease);
+}
+
+.zan-proc-css__rig {
+  position: relative;
+  width: min(72cqw, 86cqh, 34rem);
+  aspect-ratio: 1.547;
+  transform-style: preserve-3d;
+  transform: translateY(-14%) rotateX(calc(var(--proc-pitch, 0.22rad) * -1)) rotateY(var(--proc-yaw, -0.42rad));
+  will-change: transform;
+}
+
+/* The lid, tilted back a little from upright, hinged at its bottom edge. */
+.zan-proc-css__lid {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+  transform: rotateX(8deg);
+}
+
+.zan-proc-css__front,
+.zan-proc-css__back {
+  position: absolute;
+  inset: 0;
+  border-radius: 4.5% / 7%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.zan-proc-css__front {
+  padding: 2.4%;
+  background: var(--color-ink);
+  box-shadow: 0 0 0 1px var(--color-line-strong);
+  transform: translateZ(1px);
+}
+
+.zan-proc-css__front canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 1.5% / 2.3%;
+  background: var(--color-bg);
+}
+
+.zan-proc-css__back {
+  background: linear-gradient(160deg, var(--color-surface-2), var(--color-line-strong));
+  box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  transform: rotateY(180deg) translateZ(1px);
+}
+
+/* The base lies flat, reaching toward the viewer from the hinge. */
+.zan-proc-css__base {
+  position: absolute;
+  left: -4%;
+  top: 100%;
+  width: 108%;
+  height: 72%;
+  border-radius: 3% / 5%;
+  background: linear-gradient(180deg, var(--color-line-strong), var(--color-surface-2));
+  box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  transform-origin: 50% 0;
+  transform: rotateX(90deg);
+}
+
+.zan-proc-css__keys {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 9%;
+  height: 50%;
+  border-radius: 2%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 6.4%, color-mix(in oklab, var(--color-ink) 22%, transparent) 6.4% 6.9%),
+    repeating-linear-gradient(0deg, transparent 0 16%, color-mix(in oklab, var(--color-ink) 22%, transparent) 16% 18%),
+    color-mix(in oklab, var(--color-ink) 12%, var(--color-surface-2));
+}
+
+.zan-proc-css__pad {
+  position: absolute;
+  left: 34%;
+  right: 34%;
+  top: 65%;
+  bottom: 8%;
+  border-radius: 6%;
+  background: color-mix(in oklab, var(--color-ink) 6%, var(--color-surface-2));
+  box-shadow: inset 0 0 0 1px var(--color-line-strong);
+}
+
+/* A soft floor shadow under the rig, not turned with it. */
+.zan-proc-css__floor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(62cqw, 80cqh, 32rem);
+  height: 9%;
+  transform: translate(-50%, 190%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(17 16 22 / 0.16), rgb(17 16 22 / 0));
+}

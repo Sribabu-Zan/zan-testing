@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useGSAP } from "@gsap/react";
-import { Pause, Play } from "lucide-react";
 import { gsap, MQ, ScrollTrigger } from "@/lib/gsap";
+import { getLenis } from "@/hooks/useLenis";
 import { Eyebrow } from "@/components/zan/ui/Eyebrow";
 import "@/components/zan/showreel/showreel.css";
 
@@ -90,17 +90,6 @@ export function ShowreelStage({ eyebrow, line }: Props) {
   const coverRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<SVGRectElement>(null);
 
-  /* The visitor's pause wins over everything else. The playback effect reads
-     it through a ref, so toggling never tears down the observer. */
-  const pausedRef = useRef(false);
-  const syncRef = useRef<() => void>(() => {});
-  const [paused, setPaused] = useState(false);
-  const togglePlayback = () => {
-    pausedRef.current = !pausedRef.current;
-    setPaused(pausedRef.current);
-    syncRef.current();
-  };
-
   /* Playback. The file is decorative, so it runs only while the section is
      near the viewport and the tab is visible, and never for reduced motion. */
   useEffect(() => {
@@ -116,7 +105,7 @@ export function ShowreelStage({ eyebrow, line }: Props) {
     let near = false;
 
     const update = () => {
-      if (near && !pausedRef.current && !reduce.matches && !document.hidden) {
+      if (near && !reduce.matches && !document.hidden) {
         if (!video.paused) return;
         void video.play().catch(() => {
           /* Autoplay refused, or no source this browser can decode: either
@@ -126,7 +115,6 @@ export function ShowreelStage({ eyebrow, line }: Props) {
         video.pause();
       }
     };
-    syncRef.current = update;
 
     const io = new IntersectionObserver(
       (entries) => {
@@ -135,18 +123,44 @@ export function ShowreelStage({ eyebrow, line }: Props) {
         near = entries[entries.length - 1].isIntersecting;
         update();
       },
-      // Enough lead for the file to be running before it is on screen.
-      { rootMargin: "600px 0px" },
+      // Playing, not just buffered, well before it is on screen.
+      { rootMargin: "1200px 0px" },
     );
     io.observe(root);
     document.addEventListener("visibilitychange", update);
     reduce.addEventListener("change", update);
 
+    // Fetch the film ahead of time, not when the section arrives. Once the page
+    // has finished loading and the main thread is idle, upgrade from
+    // preload="none" and start buffering, so the footage is ready by the time
+    // anyone scrolls down to it. Waiting for load keeps it off the hero's
+    // first paint. load() restarts the element, so playback is re-applied.
+    let idleId = 0;
+    let fallbackTimer = 0;
+    const warm = () => {
+      if (video.preload === "auto") return;
+      video.preload = "auto";
+      video.load();
+      update();
+    };
+    // Safari only gained requestIdleCallback recently; read it as optional
+    // rather than branching on `in window`, which TypeScript narrows to never.
+    const requestIdle = window.requestIdleCallback as typeof window.requestIdleCallback | undefined;
+    const schedule = () => {
+      if (requestIdle) idleId = requestIdle(warm, { timeout: 2500 });
+      else fallbackTimer = window.setTimeout(warm, 1200);
+    };
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
+
     return () => {
       io.disconnect();
       document.removeEventListener("visibilitychange", update);
       reduce.removeEventListener("change", update);
-      syncRef.current = () => {};
+      window.removeEventListener("load", schedule);
+      const cancelIdle = window.cancelIdleCallback as typeof window.cancelIdleCallback | undefined;
+      if (idleId && cancelIdle) cancelIdle(idleId);
+      window.clearTimeout(fallbackTimer);
       video.pause();
     };
   }, []);
@@ -376,7 +390,40 @@ export function ShowreelStage({ eyebrow, line }: Props) {
 
           // Hold, then fade to the page ground, so the white section below
           // arrives on continuous white instead of a cut.
-          tl.to(coverRef.current, { opacity: 1, duration: 0.13, ease: "power2.inOut" }, 0.87);
+          // Only in the last few per cent of the pin, so the page never sits on
+          // a blank white screen: the ground fades up as the section is already
+          // handing over to the metrics below.
+          tl.to(coverRef.current, { opacity: 1, duration: 0.05, ease: "power1.in" }, 0.95);
+
+          // Stop scrolling part-way through the opening and it finishes by
+          // itself, in the direction you were going: on down to the full-bleed
+          // hold, or back up to the wordmark. Scrolling still drives it frame
+          // by frame; this only takes over once the page has come to rest, and
+          // any new scroll input interrupts it.
+          const HOLD = 0.74;
+          const st = tl.scrollTrigger;
+          let settling = false;
+          const settle = () => {
+            if (!st || settling || !st.isActive) return;
+            const p = st.progress;
+            if (p <= 0.015 || p >= HOLD - 0.01) return;
+            const target = st.direction >= 0 ? st.start + (st.end - st.start) * HOLD : st.start;
+            settling = true;
+            // Released on a timer, not onComplete: if the visitor scrolls
+            // during the glide, Lenis abandons it without calling back, and a
+            // flag left set would switch this off for the rest of the visit.
+            window.setTimeout(() => {
+              settling = false;
+            }, 1400);
+            const lenis = getLenis();
+            if (lenis) {
+              lenis.scrollTo(target, { duration: 1.15, easing: (t: number) => 1 - Math.pow(1 - t, 3) });
+            } else {
+              window.scrollTo({ top: target, behavior: "smooth" });
+            }
+          };
+          ScrollTrigger.addEventListener("scrollEnd", settle);
+          return () => ScrollTrigger.removeEventListener("scrollEnd", settle);
         },
       );
 
@@ -393,15 +440,15 @@ export function ShowreelStage({ eyebrow, line }: Props) {
   return (
     <div ref={rootRef} className="relative w-full">
       <div ref={stageRef} className="zan-showreel-stage relative isolate w-full overflow-hidden bg-bg">
-        {/* Decorative footage: silent, no controls, paused off screen.
-            preload="none", because Chrome treats "metadata" as licence to pull
-            the whole file down at load, which is bandwidth the hero wants.
-            Nothing but the poster is fetched until the section is near. */}
+        {/* Decorative footage: silent, no controls, paused off screen. The
+            markup says preload="none" so nothing is fetched while the hero
+            paints; the playback effect upgrades it to "auto" once the page has
+            loaded, so the film is buffered before the section is reached. */}
         <div ref={videoWrapRef} className="zan-showreel-video absolute inset-0">
           <video
             ref={videoRef}
             className="size-full object-cover"
-            poster="/videos/showreel-poster.jpg"
+            poster="/videos/showreel-v2-poster.jpg"
             muted
             loop
             playsInline
@@ -412,8 +459,8 @@ export function ShowreelStage({ eyebrow, line }: Props) {
           >
             {/* VP9 first (smaller); H.264 for Safari before iOS 17.4 and any
                 browser without VP9, which would otherwise get only the poster. */}
-            <source src="/videos/showreel.webm" type="video/webm" />
-            <source src="/videos/showreel.mp4" type="video/mp4" />
+            <source src="/videos/showreel-v2.webm" type="video/webm" />
+            <source src="/videos/showreel-v2.mp4" type="video/mp4" />
           </video>        </div>
 
         {/* The sheet of page ground, with the wordmark knocked out of it. The
@@ -480,22 +527,6 @@ export function ShowreelStage({ eyebrow, line }: Props) {
 
         {/* The fade to the page ground that hands off to the section below. */}
         <div ref={coverRef} aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 bg-bg opacity-0" />
-
-        {/* Looping footage that runs past five seconds beside other content
-            needs a way to stop it (WCAG 2.2.2). Hidden for reduced motion,
-            where nothing plays. */}
-        <button
-          type="button"
-          onClick={togglePlayback}
-          className="absolute bottom-5 left-5 z-30 inline-flex items-center gap-2 rounded-full border border-line-strong bg-bg px-3.5 py-2 font-mono text-[0.6875rem] tracking-[0.16em] text-ink uppercase transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-ink motion-reduce:hidden sm:bottom-6 sm:left-6"
-        >
-          {paused ? (
-            <Play aria-hidden="true" className="size-3.5" />
-          ) : (
-            <Pause aria-hidden="true" className="size-3.5" />
-          )}
-          {paused ? "Play showreel" : "Pause showreel"}
-        </button>
       </div>
     </div>
   );

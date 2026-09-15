@@ -45,41 +45,8 @@
   }
 }
 
-/* ── Work wall ───────────────────────────────────────────────────────────────
-   Framer writes transform and opacity inline from scroll, which the global
-   MotionConfig does not reach — so reduced motion flattens the wall here: no
-   tilt, no drift, and the three rows reflow into one grid. */
-
-.zan-wall {
-  height: 170vh;
-}
-@media (min-width: 1024px) {
-  .zan-wall {
-    height: 232vh;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .zan-wall {
-    height: auto;
-    padding-bottom: var(--spacing-section);
-  }
-  .zan-wall-plane {
-    transform: none !important;
-    opacity: 1 !important;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17.5rem), 1fr));
-    gap: 1.25rem;
-    width: min(100% - 2.5rem, 82.5rem);
-    margin-inline: auto;
-  }
-  .zan-wall-row {
-    display: contents !important;
-    transform: none !important;
-  }
-  .zan-wall-card {
-    width: auto !important;
-  }
-}
+/* The work wall's rules moved to components/zan/work/wall.css (zan-workwall-*)
+   when the rows became a marquee. */
 
 /* ── Scroll-expand panel (case studies) ──────────────────────────────────────
    The panel is always laid out full-bleed; a clip-path reveals it from an

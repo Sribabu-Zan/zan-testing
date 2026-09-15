@@ -115,7 +115,7 @@ export function Footer() {
                   href={s.href}
                   target="_blank"
                   rel="noopener"
-                  className="group/social inline-flex h-10 items-center gap-2 rounded-full border border-line bg-bg pr-4 pl-1.5 text-small font-medium text-ink-2 transition-[color,border-color,translate] duration-300 ease-out-expo hover:-translate-y-0.5 hover:border-line-strong hover:text-ink"
+                  className="group/social inline-flex h-11 items-center md:h-10 gap-2 rounded-full border border-line bg-bg pr-4 pl-1.5 text-small font-medium text-ink-2 transition-[color,border-color,translate] duration-300 ease-out-expo hover:-translate-y-0.5 hover:border-line-strong hover:text-ink"
                 >
                   <span className="grid size-7 place-items-center rounded-full bg-surface text-ink transition-colors duration-300 group-hover/social:bg-brand group-hover/social:text-on-brand">
                     <SocialIcon name={s.label} className="size-3.5" />
@@ -132,12 +132,12 @@ export function Footer() {
           {footerColumns.map((col) => (
             <div key={col.title}>
               <h2 className="font-mono text-eyebrow text-muted uppercase">{col.title}</h2>
-              <ul className="mt-5 space-y-3">
+              <ul className="mt-4 md:mt-5 md:space-y-3">
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <SiteLink
                       href={link.href}
-                      className="group/link inline-flex items-center gap-2 text-body text-ink-2 transition-colors duration-300 hover:text-ink"
+                      className="group/link inline-flex min-h-11 items-center gap-2 text-body text-ink-2 md:min-h-0 transition-colors duration-300 hover:text-ink"
                     >
                       <span className="h-px w-0 shrink-0 bg-brand-ink transition-[width] duration-500 ease-out-expo group-hover/link:w-3" />
                       {link.label}
@@ -149,11 +149,11 @@ export function Footer() {
           ))}
           <div className="col-span-2 lg:col-span-1">
             <h2 className="font-mono text-eyebrow text-muted uppercase">Contact</h2>
-            <ul className="mt-5 space-y-3">
+            <ul className="mt-4 md:mt-5 md:space-y-3">
               <li>
                 <a
                   href={`mailto:${site.email}`}
-                  className="text-body break-words text-ink-2 transition-colors duration-300 hover:text-ink"
+                  className="inline-flex min-h-11 items-center text-body break-words text-ink-2 md:min-h-0 transition-colors duration-300 hover:text-ink"
                 >
                   {site.email}
                 </a>
@@ -161,7 +161,7 @@ export function Footer() {
               <li>
                 <a
                   href={`tel:${region.office.phoneTel}`}
-                  className="text-body text-ink-2 tabular-nums transition-colors duration-300 hover:text-ink"
+                  className="inline-flex min-h-11 items-center text-body text-ink-2 tabular-nums md:min-h-0 transition-colors duration-300 hover:text-ink"
                 >
                   {region.office.phoneDisplay}
                 </a>
@@ -209,12 +209,12 @@ export function Footer() {
                   ))}
                   {locality && <span className="block">{locality}</span>}
                 </address>
-                <ul className="mt-4 space-y-1.5 border-t border-line pt-4">
+                <ul className="mt-3 border-t border-line pt-2 md:mt-4 md:space-y-1.5 md:pt-4">
                   {phones.map((p) => (
                     <li key={p.tel}>
                       <a
                         href={`tel:${p.tel}`}
-                        className="inline-flex items-center gap-2 text-small font-medium text-ink tabular-nums transition-colors duration-300 hover:text-brand-ink"
+                        className="inline-flex min-h-11 items-center gap-2 text-small font-medium text-ink tabular-nums md:min-h-0 transition-colors duration-300 hover:text-brand-ink"
                       >
                         <Phone aria-hidden="true" className="size-3.5 shrink-0 text-brand-ink" />
                         {p.display}
@@ -237,10 +237,10 @@ export function Footer() {
             © <span suppressHydrationWarning>{YEAR}</span> {region.brandName}. All rights reserved.
             <span className="block">US entity: {site.usEntity}, Sacramento, California.</span>
           </p>
-          <ul className="flex flex-wrap gap-x-5 gap-y-2 lg:max-w-md">
+          <ul className="flex flex-wrap gap-x-5 md:gap-y-2 lg:max-w-md">
             {legalLinks.map((l) => (
               <li key={l.label}>
-                <SiteLink href={l.href} className="transition-colors duration-300 hover:text-ink">
+                <SiteLink href={l.href} className="inline-flex min-h-11 items-center md:min-h-0 transition-colors duration-300 hover:text-ink">
                   {l.label}
                 </SiteLink>
               </li>
@@ -270,7 +270,7 @@ export function Footer() {
             ))}
             <SiteLink
               href="#main"
-              className="inline-flex items-center gap-1.5 font-medium text-ink-2 transition-colors duration-300 hover:text-ink"
+              className="inline-flex min-h-11 items-center gap-1.5 font-medium text-ink-2 md:min-h-0 transition-colors duration-300 hover:text-ink"
             >
               <ArrowUp aria-hidden="true" className="size-3.5" />
               Back to top

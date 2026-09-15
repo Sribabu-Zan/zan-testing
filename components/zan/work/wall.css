@@ -1,0 +1,88 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Work wall (#work): the tilted marquee wall in components/ui/hero-parallax.
+
+   The section has a minimum height (the scroll runway the tilt and fall read
+   from) but grows with its content, and its bottom padding covers the plane's
+   landed fall, so the last row is never clipped by the section's overflow.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.zan-workwall {
+  min-height: 170vh;
+  padding-bottom: calc(4vh + 4rem);
+}
+@media (min-width: 1024px) {
+  .zan-workwall {
+    min-height: 232vh;
+    padding-bottom: calc(9vh + 6rem);
+  }
+}
+
+.zan-workwall-row {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.zan-workwall-row:last-child {
+  margin-bottom: 0;
+}
+/* A marquee row starts at its left edge; the script places it. */
+.zan-workwall[data-looping] .zan-workwall-row {
+  justify-content: flex-start;
+  width: max-content;
+}
+
+.zan-workwall-card {
+  flex-shrink: 0;
+  width: min(18rem, 76vw);
+  aspect-ratio: 100 / 104;
+}
+@media (min-width: 768px) {
+  .zan-workwall-row {
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .zan-workwall-card {
+    width: 19.5rem;
+    aspect-ratio: 108 / 100;
+  }
+}
+@media (min-width: 1024px) {
+  .zan-workwall-row {
+    gap: 2.5rem;
+    margin-bottom: 3rem;
+  }
+  .zan-workwall-card {
+    width: max(19rem, 26vw);
+    aspect-ratio: 118 / 100;
+  }
+}
+
+/* Reduced motion: Framer still writes the tilt, fall and fade inline, so strip
+   them, and reflow the rows into one flat grid. The marquee never starts and
+   its clones never mount. */
+@media (prefers-reduced-motion: reduce) {
+  .zan-workwall {
+    min-height: 0;
+    padding-bottom: var(--spacing-section);
+  }
+  .zan-workwall-plane {
+    transform: none !important;
+    opacity: 1 !important;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17.5rem), 1fr));
+    gap: 1.25rem;
+    width: min(100% - 2.5rem, 82.5rem);
+    margin-inline: auto;
+  }
+  .zan-workwall-row {
+    display: contents !important;
+    transform: none !important;
+  }
+  .zan-workwall-card {
+    width: auto !important;
+  }
+  .zan-workwall-clone {
+    display: none;
+  }
+}

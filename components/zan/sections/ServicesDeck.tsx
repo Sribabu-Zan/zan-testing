@@ -74,6 +74,7 @@ export function ServicesDeck() {
       <FlowSection id="why-us" aria-labelledby="deck-why-us-title" className={DECK_TONES.surface.slab}>
         <DeckPanelBody
           tone="surface"
+          center
           eyebrow={`${whyIndex} / ${whyUs.eyebrow}`}
           headingId="deck-why-us-title"
           headline={whyUs.title}

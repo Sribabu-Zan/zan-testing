@@ -260,23 +260,6 @@ html[data-region="us"] {
   }
 }
 
-/* The OS cursor is hidden only while the custom cursor is actually mounted —
-   MouseFollower adds .zan-cursor to <html>. Touch, reduced motion, or a
-   failed chunk load all keep the normal pointer. */
-html.zan-cursor,
-html.zan-cursor body,
-html.zan-cursor a,
-html.zan-cursor button,
-html.zan-cursor [role="button"],
-html.zan-cursor [data-cursor] {
-  cursor: none;
-}
-html.zan-cursor input,
-html.zan-cursor textarea,
-html.zan-cursor select {
-  cursor: text;
-}
-
 /* Hidden scrollbar, as on the reference. ScrollProgress stands in for it. */
 html,
 body {

@@ -1,27 +1,9 @@
-import { chapters } from "@/constants/zan";
-import { ScrollFoldTransition } from "@/components/animations/ScrollFoldTransition";
-import { Eyebrow } from "@/components/zan/ui/Eyebrow";
-
 /**
- * Chapter 03 — the reference's page fold, on paper: the page hinges open
- * around the chapter label, then the Process section swings up behind it.
+ * Chapter 03 used to be a full-screen page-fold interstitial before Process.
+ * The client found it unclear, so it no longer renders: its eyebrow and label
+ * ("Chapter 03", "How we work") are now the Process section's own heading.
+ * Kept as an empty component so app/page.tsx needs no change.
  */
 export function ChapterProcess() {
-  const c = chapters.process;
-  return (
-    <ScrollFoldTransition
-      label={
-        <div className="flex flex-col items-center">
-          <Eyebrow>{c.eyebrow}</Eyebrow>
-          <p className="mt-6 font-sans text-giant font-bold uppercase text-ink">
-            {c.label.map((line) => (
-              <span key={line} className="block">
-                {line}
-              </span>
-            ))}
-          </p>
-        </div>
-      }
-    />
-  );
+  return null;
 }

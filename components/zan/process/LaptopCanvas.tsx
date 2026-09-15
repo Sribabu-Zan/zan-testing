@@ -1,12 +1,23 @@
 "use client";
 
 import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
-import { Canvas, invalidate, useFrame } from "@react-three/fiber";
+import { Canvas, invalidate, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer, useGLTF } from "@react-three/drei";
-import { CanvasTexture, SRGBColorSpace, type Group, type Material, type Mesh } from "three";
+import {
+  Box3,
+  CanvasTexture,
+  SRGBColorSpace,
+  Vector3,
+  type Group,
+  type Material,
+  type Mesh,
+  type MeshBasicMaterial,
+  type PerspectiveCamera,
+} from "three";
 import { processSteps } from "@/constants/zan";
 import { useBrandPalette, useRegionId, type BrandPalette } from "@/lib/region";
 import { drawScreen, FALLBACK_FONTS, resolveFonts, SCREEN_H, SCREEN_W } from "./screens";
+import { REST_PITCH, REST_YAW, spinPitch, spinYaw, STEPS, TAU, turnsAt } from "./spin";
 
 /* ───────────────────────────────────────────────────────────────────────────
    The Process laptop — Apple_Website's Features technique on paper.
@@ -16,9 +27,16 @@ import { drawScreen, FALLBACK_FONTS, resolveFonts, SCREEN_H, SCREEN_W } from "./
    is fetched from a CDN. The body keeps the model's own silver materials;
    only the screen is replaced, by a canvas texture per stage.
 
+   Two variants:
+   - "stage" (desktop): full-screen canvas, a three-quarter turn per stage.
+   - "spin" (phones, tablets): the laptop fitted to a smaller canvas at the
+     top of the pinned stage, one full turn per stage (see ./spin.ts). Its
+     screen changes while its back is to the camera. DPR is capped lower.
+
    frameloop="demand": nothing renders unless the scroll scene kicks it (it
-   only does while the section is in its scroll range), so the canvas costs
-   nothing off-screen. Loaded with next/dynamic, ssr: false, near the viewport.
+   only does while the section is in its scroll range), and `running={false}`
+   stops the loop entirely off-screen. Loaded with next/dynamic, ssr: false,
+   near the viewport.
    ─────────────────────────────────────────────────────────────────────────── */
 
 const MODEL = "/models/macbook.glb";
@@ -30,6 +48,8 @@ export interface ProcessProgress {
   /** 0→1 through the pinned stages. */
   pin: number;
 }
+
+export type LaptopVariant = "stage" | "spin";
 
 /** Every mesh but the screen, with its own material (gltfjsx -T layout). */
 const PARTS: readonly [string, string][] = [
@@ -54,6 +74,7 @@ const PARTS: readonly [string, string][] = [
 ];
 const SCREEN = "Object_123";
 const NODE_ROTATION: [number, number, number] = [Math.PI / 2, 0, 0];
+const STAGE_POSITION: [number, number, number] = [0, -0.86, 0.4];
 
 /* ── Motion: the turn is a pure function of scroll ─────────────────────── */
 
@@ -128,52 +149,114 @@ function Laptop({
   progressRef,
   step,
   palette,
+  variant,
+  onReady,
 }: {
   progressRef: RefObject<ProcessProgress>;
   step: number;
   palette: BrandPalette;
+  variant: LaptopVariant;
+  onReady?: () => void;
 }) {
+  const spin = variant === "spin";
   const groupRef = useRef<Group>(null);
+  const innerRef = useRef<Group>(null);
+  const shadowRef = useRef<Group>(null);
+  const screenRef = useRef<MeshBasicMaterial>(null);
   // Seeded from the scroll position on the first frame, not during render.
   const stateRef = useRef({ yaw: Number.NaN, pitch: Number.NaN });
   const { nodes, materials } = useGLTF(MODEL, DRACO, false);
   const screens = useScreens(palette);
+  const camera = useThree((s) => s.camera);
+  const width = useThree((s) => s.size.width);
+  const height = useThree((s) => s.size.height);
+
+  // Spin: centre the model on its turning axis and frame it in the canvas,
+  // leaving room for its widest silhouette (the diagonal, mid-turn).
+  useEffect(() => {
+    if (!spin) return;
+    const outer = groupRef.current;
+    const inner = innerRef.current;
+    if (!outer || !inner || !width || !height) return;
+    const saved = outer.rotation.clone();
+    outer.rotation.set(0, 0, 0);
+    inner.position.set(0, 0, 0);
+    outer.updateMatrixWorld(true);
+    const box = new Box3().setFromObject(inner);
+    const centre = box.getCenter(new Vector3());
+    const size = box.getSize(new Vector3());
+    inner.position.set(-centre.x, -centre.y, -centre.z);
+    outer.rotation.copy(saved);
+    if (shadowRef.current) shadowRef.current.position.y = -size.y / 2 - size.z * 0.12;
+
+    const cam = camera as PerspectiveCamera;
+    const tan = Math.tan((cam.fov * Math.PI) / 360);
+    const aspect = width / height;
+    const halfW = (Math.hypot(size.x, size.z) / 2) * 1.02;
+    const halfH = ((size.y * Math.cos(REST_PITCH) + size.z * Math.sin(REST_PITCH)) / 2) * 1.12;
+    const dist = Math.max(halfW / (tan * aspect), halfH / tan) + size.z / 2;
+    cam.position.set(0, dist * 0.05, dist);
+    cam.lookAt(0, 0, 0);
+    cam.updateProjectionMatrix();
+    invalidate();
+    onReady?.();
+  }, [spin, camera, width, height, nodes, onReady]);
 
   useFrame((_, delta) => {
     const g = groupRef.current;
     if (!g) return;
     const target = progressRef.current;
     const s = stateRef.current;
-    const ty = yawAt(target);
-    const tp = pitchAt(target);
+    const ty = spin ? spinYaw(target.entry, turnsAt(target.pin)) : yawAt(target);
+    const tp = spin ? spinPitch(target.entry) : pitchAt(target);
     if (Number.isNaN(s.yaw)) {
       s.yaw = ty;
       s.pitch = tp;
     }
-    const k = 1 - Math.exp(-Math.min(delta, 0.1) * 7);
+    // The phone scene is already smoothed by its scrub, so it follows closely.
+    const k = 1 - Math.exp(-Math.min(delta, 0.1) * (spin ? 14 : 7));
     s.yaw += (ty - s.yaw) * k;
     s.pitch += (tp - s.pitch) * k;
     g.rotation.set(s.pitch, s.yaw, 0);
+    if (spin && screenRef.current) {
+      // The screen follows the laptop as drawn, so it only changes face-away.
+      const shown = Math.min(STEPS - 1, Math.max(0, Math.round((s.yaw - REST_YAW) / TAU)));
+      if (screenRef.current.map !== screens[shown]) {
+        screenRef.current.map = screens[shown];
+        screenRef.current.needsUpdate = true;
+      }
+    }
     // Keep drawing only while the laptop is still easing toward the scroll.
     if (Math.abs(ty - s.yaw) > 1e-4 || Math.abs(tp - s.pitch) > 1e-4) invalidate();
   });
 
   return (
-    <group ref={groupRef}>
-      <group scale={0.08} position={[0, -0.86, 0.4]}>
-        {PARTS.map(([node, material]) => (
-          <mesh
-            key={node}
-            geometry={(nodes[node] as Mesh).geometry}
-            material={materials[material] as Material}
-            rotation={NODE_ROTATION}
-          />
-        ))}
-        <mesh geometry={(nodes[SCREEN] as Mesh).geometry} rotation={NODE_ROTATION}>
-          <meshBasicMaterial map={screens[step]} toneMapped={false} />
-        </mesh>
+    <>
+      <group ref={groupRef}>
+        <group ref={innerRef} scale={0.08} position={spin ? undefined : STAGE_POSITION}>
+          {PARTS.map(([node, material]) => (
+            <mesh
+              key={node}
+              geometry={(nodes[node] as Mesh).geometry}
+              material={materials[material] as Material}
+              rotation={NODE_ROTATION}
+            />
+          ))}
+          <mesh geometry={(nodes[SCREEN] as Mesh).geometry} rotation={NODE_ROTATION}>
+            {spin ? (
+              <meshBasicMaterial ref={screenRef} toneMapped={false} />
+            ) : (
+              <meshBasicMaterial map={screens[step]} toneMapped={false} />
+            )}
+          </mesh>
+        </group>
       </group>
-    </group>
+      {spin && (
+        <group ref={shadowRef} position={[0, -1, 0]}>
+          <ContactShadows opacity={0.3} scale={5} blur={2.4} far={1.6} resolution={256} color={palette.ink} />
+        </group>
+      )}
+    </>
   );
 }
 
@@ -207,37 +290,50 @@ class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
 export default function LaptopCanvas({
   progressRef,
   kickRef,
-  step,
+  step = 0,
+  variant = "stage",
+  running = true,
+  onReady,
 }: {
   progressRef: RefObject<ProcessProgress>;
   /** Filled in with this canvas's invalidate, for the scroll scene to call. */
   kickRef: RefObject<() => void>;
-  step: number;
+  /** The screen on show ("stage" only; "spin" picks it from the turn). */
+  step?: number;
+  variant?: LaptopVariant;
+  /** False stops the render loop (the section is off screen). */
+  running?: boolean;
+  /** Called once the model is in and framed ("spin"). */
+  onReady?: () => void;
 }) {
   const palette = useBrandPalette();
   const region = useRegionId();
+  const spin = variant === "spin";
 
   useEffect(() => {
-    kickRef.current = () => invalidate();
+    kickRef.current = running ? () => invalidate() : () => {};
+    if (running) invalidate();
     return () => {
       kickRef.current = () => {};
     };
-  }, [kickRef]);
+  }, [kickRef, running]);
 
   return (
     <Boundary>
       <Canvas
-        frameloop="demand"
-        dpr={[1, 1.75]}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        frameloop={running ? "demand" : "never"}
+        dpr={spin ? [1, 1.5] : [1, 1.75]}
+        gl={{ antialias: true, alpha: true, powerPreference: spin ? "default" : "high-performance" }}
         camera={{ position: [0, 0.5, 9], fov: 30 }}
         onCreated={({ camera }) => camera.lookAt(0, 0, 0)}
         style={{ pointerEvents: "none" }}
       >
         <Lights key={region} palette={palette} />
         <Suspense fallback={null}>
-          <Laptop progressRef={progressRef} step={step} palette={palette} />
-          <ContactShadows position={[0, -0.95, 0]} opacity={0.32} scale={9} blur={2.6} far={2.4} color={palette.ink} />
+          <Laptop progressRef={progressRef} step={step} palette={palette} variant={variant} onReady={onReady} />
+          {!spin && (
+            <ContactShadows position={[0, -0.95, 0]} opacity={0.32} scale={9} blur={2.6} far={2.4} color={palette.ink} />
+          )}
         </Suspense>
       </Canvas>
     </Boundary>

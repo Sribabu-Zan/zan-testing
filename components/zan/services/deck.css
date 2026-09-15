@@ -255,6 +255,41 @@
 
 /* ── The deck's closing calls to action ──────────────────────────────────── */
 
+/* A normal section rhythm below the grid, at every width. */
 .zan-deck-actions {
-  padding-top: clamp(1rem, 3svh, 2.5rem);
+  padding-top: clamp(2rem, 5svh, 4rem);
+}
+
+/* Grid cells never grow past their track (a long word or a clamped note
+   would otherwise widen a column past the container). */
+.zan-deck-grid > li {
+  min-width: 0;
+}
+
+/* The closing panel (why us) is shorter than a screen on most displays. With
+   motion its slab must still be a full screen, since it covers the whole of
+   the panel pinned under it, so its content block is centred in the space
+   under the navbar instead of leaving a dead band above the buttons. Its four
+   notes are short, so they are shown whole where they show at all. */
+.zan-deck-panel[data-center] {
+  justify-content: center;
+}
+@media (min-width: 64rem) {
+  .zan-deck-panel[data-center] .zan-deck-note {
+    -webkit-line-clamp: unset;
+    line-clamp: none;
+  }
+}
+
+/* With reduced motion the deck is a plain stack: a phone panel, and the
+   closing panel at any width, is as tall as its content. */
+@media (max-width: 47.999rem) and (prefers-reduced-motion: reduce) {
+  [data-flow-inner]:has(> .zan-deck-panel) {
+    min-height: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-flow-inner]:has(> .zan-deck-panel[data-center]) {
+    min-height: 0;
+  }
 }

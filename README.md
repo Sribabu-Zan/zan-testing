@@ -14,8 +14,8 @@ A light-theme, scroll-driven company page for Zan Services. It covers the three 
 
 ```bash
 npm install
-npx next dev -p 5174      # http://localhost:5174
-npx next build && npx next start -p 5174
+npm run dev               # http://localhost:5173
+npm run build && npm run start
 ```
 
 ## Structure

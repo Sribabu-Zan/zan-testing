@@ -135,6 +135,34 @@ export function FloatingActions() {
     if (!el) return;
     const mobile = window.matchMedia(MOBILE);
     let timer = 0;
+
+    // A pinned scene (a GSAP pin is position: fixed while active, a sticky
+    // stage is position: sticky) holds its content still, so a visitor cannot
+    // scroll its last row out from under the dock. While one fills the screen
+    // behind the dock, the dock stays tucked away; the navbar still carries
+    // the phone number and the menu.
+    const coveredByPinnedStage = () => {
+      const r = el.getBoundingClientRect();
+      const x = Math.min(window.innerWidth - 1, Math.max(0, r.left + r.width / 2));
+      const y = Math.min(window.innerHeight - 1, Math.max(0, r.top + r.height / 2));
+      const h = window.innerHeight;
+      for (const hit of document.elementsFromPoint(x, y)) {
+        if (el.contains(hit)) continue;
+        for (let node: Element | null = hit; node && node !== document.body; node = node.parentElement) {
+          const pos = getComputedStyle(node).position;
+          if (pos !== "fixed" && pos !== "sticky") continue;
+          const b = node.getBoundingClientRect();
+          if (b.top <= 1 && b.bottom >= h - 1 && b.height >= h * 0.9) return true;
+        }
+        return false;
+      }
+      return false;
+    };
+    const checkPinned = () => {
+      if (mobile.matches && coveredByPinnedStage()) el.dataset.pinned = "1";
+      else delete el.dataset.pinned;
+    };
+
     const onScroll = () => {
       if (!mobile.matches) return;
       if (openedAtY.current !== null) {
@@ -144,14 +172,17 @@ export function FloatingActions() {
       el.dataset.scrolling = "1";
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
+        checkPinned();
         delete el.dataset.scrolling;
       }, REVEAL_DELAY);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+    checkPinned();
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.clearTimeout(timer);
       delete el.dataset.scrolling;
+      delete el.dataset.pinned;
     };
   }, [close]);
 
@@ -193,6 +224,7 @@ export function FloatingActions() {
           "fixed right-4 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-40 sm:right-6 sm:bottom-6",
           "transition-[opacity,translate] duration-300 ease-out-expo",
           "max-md:data-scrolling:pointer-events-none max-md:data-scrolling:translate-y-4 max-md:data-scrolling:opacity-0",
+          "max-md:data-pinned:pointer-events-none max-md:data-pinned:translate-y-4 max-md:data-pinned:opacity-0",
           chatOpen && "pointer-events-none translate-y-3 opacity-0",
         )}
       >

@@ -72,7 +72,7 @@ export default function ServicesPage() {
                 {group.parent && (
                   <SiteLink
                     href={group.parent.href}
-                    className="group/all inline-flex items-center gap-1.5 text-small font-medium text-ink transition-colors duration-300 hover:text-brand-ink"
+                    className="group/all inline-flex min-h-11 items-center gap-1.5 text-small font-medium text-ink transition-colors duration-300 hover:text-brand-ink"
                   >
                     {group.parent.title} overview
                     <ArrowUpRight

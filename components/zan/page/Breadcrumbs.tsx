@@ -43,7 +43,9 @@ export function Breadcrumbs({ trail, className }: { trail: readonly Crumb[]; cla
             ) : (
               <SiteLink
                 href={crumb.href}
-                className="rounded transition-colors duration-300 hover:text-brand-ink"
+                // The padding only grows the tap area on phones; the negative
+                // margin keeps the trail's line height as it was.
+                className="-my-4 inline-block rounded py-4 transition-colors duration-300 hover:text-brand-ink md:my-0 md:py-0"
               >
                 {crumb.label}
               </SiteLink>

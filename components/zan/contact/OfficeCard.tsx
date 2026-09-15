@@ -214,11 +214,11 @@ export function OfficeCard({ office, index }: { office: Office; index: number })
           </address>
 
           <div className="mt-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border-t border-line pt-4">
-            <ul className="flex flex-col gap-1">
+            <ul className="flex flex-col md:gap-1">
               <li>
                 <a
                   href={`tel:${office.phoneTel}`}
-                  className="text-body font-medium text-ink underline decoration-transparent underline-offset-4 transition-colors hover:text-brand-ink hover:decoration-current"
+                  className="inline-flex min-h-11 items-center text-body font-medium text-ink underline md:min-h-0 decoration-transparent underline-offset-4 transition-colors hover:text-brand-ink hover:decoration-current"
                 >
                   {office.phoneDisplay}
                 </a>
@@ -227,7 +227,7 @@ export function OfficeCard({ office, index }: { office: Office; index: number })
                 <li>
                   <a
                     href={`tel:${office.altPhoneTel}`}
-                    className="text-small text-ink-2 underline decoration-transparent underline-offset-4 transition-colors hover:text-brand-ink hover:decoration-current"
+                    className="inline-flex min-h-11 items-center text-small text-ink-2 underline md:min-h-0 decoration-transparent underline-offset-4 transition-colors hover:text-brand-ink hover:decoration-current"
                   >
                     {office.altPhoneDisplay}
                   </a>

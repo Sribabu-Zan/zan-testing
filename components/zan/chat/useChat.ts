@@ -64,8 +64,10 @@ export interface ChatController {
  * broken rather than unreachable. It also happens to be the case where the two
  * other ways of getting in touch still work, so it says so.
  */
+// A server failure (5xx) says "Request failed (500)", which means nothing to a
+// visitor: show the plain fallback instead. A 4xx carries a real reason.
 const reason = (err: unknown, fallback: string) =>
-  err instanceof ChatApiError && err.message ? err.message : fallback;
+  err instanceof ChatApiError && err.status < 500 && err.message ? err.message : fallback;
 
 /** Local echo, shown before the server has acknowledged the message. */
 const isOptimistic = (message: ChatMessage) => message.id.startsWith("pending-");

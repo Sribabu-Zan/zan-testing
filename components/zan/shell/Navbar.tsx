@@ -28,49 +28,32 @@ import { RegionSwitcher } from "./RegionSwitcher";
 import { usePreloaded } from "./shellStore";
 
 /* ── Scroll state ─────────────────────────────────────────────────────────────
-   One passive listener shared by every subscriber. The snapshot is a small
-   bitmask so useSyncExternalStore gets a stable primitive:
-     1 = scrolled past 24px (solid bar)
-     2 = hidden (scrolling down, past 600px)
-   Direction is measured from where the current run of scrolling began, so a
-   slow Lenis glide (a couple of px per frame) still counts. */
+   One passive listener shared by every subscriber; the snapshot is a boolean:
+   has the page moved past 24px (solid bar).
+
+   The bar NEVER hides on scroll. It used to slide away while reading down,
+   and on this page that mostly happened inside pinned scenes (the dial, the
+   showreel, the services deck), where scrolling down does not move the page
+   and the reader lost the one fixed thing to orient by: on a phone the top of
+   the deck read as the page slipping behind the screen. A 72px bar is a small
+   price for a header that is always there. */
 
 const SOLID_AT = 24;
-const HIDE_AFTER = 600;
-const DIRECTION_SLOP = 14;
 
-let navBits = 0;
-let lastY = 0;
-let runStart = 0;
-let runDir = 0;
+let navScrolled = false;
 const navListeners = new Set<() => void>();
 
 function readScroll() {
-  const y = window.scrollY;
-  const dir = y > lastY ? 1 : y < lastY ? -1 : 0;
-  if (dir !== 0 && dir !== runDir) {
-    runDir = dir;
-    runStart = lastY;
-  }
-  lastY = y;
-
-  let hidden = (navBits & 2) === 2;
-  if (y < HIDE_AFTER) hidden = false;
-  else if (runDir === 1 && y - runStart > DIRECTION_SLOP) hidden = true;
-  else if (runDir === -1 && runStart - y > DIRECTION_SLOP) hidden = false;
-
-  const next = (y > SOLID_AT ? 1 : 0) | (hidden ? 2 : 0);
-  if (next !== navBits) {
-    navBits = next;
+  const next = window.scrollY > SOLID_AT;
+  if (next !== navScrolled) {
+    navScrolled = next;
     navListeners.forEach((l) => l());
   }
 }
 
 function subscribeScroll(onChange: () => void) {
   if (navListeners.size === 0) {
-    lastY = runStart = window.scrollY;
-    runDir = 0;
-    navBits = window.scrollY > SOLID_AT ? 1 : 0;
+    navScrolled = window.scrollY > SOLID_AT;
     window.addEventListener("scroll", readScroll, { passive: true });
   }
   navListeners.add(onChange);
@@ -80,13 +63,12 @@ function subscribeScroll(onChange: () => void) {
   };
 }
 
-function useNavScroll() {
-  const bits = useSyncExternalStore(
+function useNavScrolled() {
+  return useSyncExternalStore(
     subscribeScroll,
-    () => navBits,
-    () => 0,
+    () => navScrolled,
+    () => false,
   );
-  return { scrolled: (bits & 1) === 1, hiddenByScroll: (bits & 2) === 2 };
 }
 
 /* ── Navbar ───────────────────────────────────────────────────────────────── */
@@ -104,20 +86,20 @@ const onPath = (pathname: string, href: string) =>
  * the region office's phone and "Contact Us". Below 1280px the tabs fold into
  * the full-screen mobile menu. It also mounts the floating contact buttons.
  *
- * Transparent at the top, frosted once the page moves, hidden while reading
- * down and back on the way up — never while a menu is open or keyboard focus
- * is inside it. It drops in once the preloader has left.
+ * Transparent at the very top of the page; from the first 24px of scroll it
+ * sits on a solid light ground with a hairline, and it stays on screen the
+ * whole way down (see the scroll state above). It drops in once the preloader
+ * has left.
  */
 export function Navbar() {
   const { office } = useRegion();
   const href = useSiteHref();
   const pathname = usePathname();
   const entered = usePreloaded();
-  const { scrolled, hiddenByScroll } = useNavScroll();
+  const scrolled = useNavScrolled();
 
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [keyboardInside, setKeyboardInside] = useState(false);
 
   const headerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -131,7 +113,6 @@ export function Navbar() {
   const megaId = useId();
   const mobileId = useId();
 
-  const hidden = hiddenByScroll && !megaOpen && !mobileOpen && !keyboardInside;
   const solid = scrolled || megaOpen;
 
   /* Mega menu: hover intent (mouse only — a touch "hover" is followed by a
@@ -244,21 +225,16 @@ export function Navbar() {
     <>
       <header
         ref={headerRef}
-        onFocus={(e) => {
-          if ((e.target as HTMLElement).matches?.(":focus-visible")) setKeyboardInside(true);
-        }}
-        onBlur={(e) => {
-          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setKeyboardInside(false);
-        }}
-        className="fixed inset-x-0 top-0 z-50 h-nav transition-transform duration-500 ease-out-expo"
-        style={{ transform: hidden ? "translateY(-100%)" : undefined }}
+        className="fixed inset-x-0 top-0 z-50 h-nav"
       >
-        {/* The frosted ground is its own layer: a backdrop-filter on the
-            header itself would become the backdrop the mega menu sits on. */}
+        {/* The ground is its own layer so it can fade in without fading the
+            bar's content. Solid, not frosted: over the pinned scenes a
+            translucent bar let the half-scrolled content under it read
+            through, as if the page had slid behind the header. */}
         <span
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute inset-0 -z-10 border-b border-line bg-bg/90 shadow-nav backdrop-blur-md",
+            "pointer-events-none absolute inset-0 -z-10 border-b border-line bg-bg shadow-nav",
             "transition-opacity duration-500 ease-smooth",
             solid ? "opacity-100" : "opacity-0",
           )}
