@@ -29,6 +29,8 @@ export const site = {
   url: "https://zanservices.com",
   email: "support@zanservices.com",
   founded: "2023",
+  /** US federal tax ID (EIN), issued to Zan Services LLC. */
+  taxId: "35-2955914",
   tagline: "Web, mobile, AI and blockchain development, and digital marketing.",
   description:
     "Zan Services builds web platforms, mobile apps, AI systems and blockchain products, and runs digital marketing for growing companies. Headquartered in Kolkata, with offices in Dubai and Sacramento.",
@@ -115,6 +117,10 @@ export interface RegionConfig {
   heroOwner: string;
   /** Country dialling code for the phone field. */
   dialCode: string;
+  /** ISO code of the currency every price on this site is quoted in. */
+  currency: "INR" | "USD" | "AED";
+  /** The same currency in words, for prose that names it. */
+  currencyName: string;
 }
 
 const zanMark = { src: "/images/brand/zan-mark.png", width: 828, height: 301 };
@@ -130,6 +136,8 @@ export const regions: Record<RegionId, RegionConfig> = {
     whatsapp: "918282948444",
     heroOwner: "Kolkata's",
     dialCode: "+91",
+    currency: "INR",
+    currencyName: "Indian rupees",
   },
   ae: {
     id: "ae",
@@ -142,6 +150,8 @@ export const regions: Record<RegionId, RegionConfig> = {
     whatsapp: "971559855875",
     heroOwner: "Kolkata's",
     dialCode: "+971",
+    currency: "AED",
+    currencyName: "Dirhams",
   },
   us: {
     id: "us",
@@ -153,6 +163,8 @@ export const regions: Record<RegionId, RegionConfig> = {
     whatsapp: "918282948444",
     heroOwner: "Your",
     dialCode: "+1",
+    currency: "USD",
+    currencyName: "US dollars",
   },
 };
 
@@ -1036,15 +1048,107 @@ export const about = {
   ],
 } as const;
 
+/* ── Credentials ───────────────────────────────────────────────────────────
+   The registrations and certificates the company holds, with the numbers the
+   old site printed in its footer (vite-react-shift: src/components/Footer.tsx,
+   "Certifications & Registrations"). Nothing here is a claim we make about
+   ourselves: each line is a register a buyer can check us against, which is
+   why the numbers are shown as text rather than only as a badge.
+
+   The IRS mark is a white lockup, so it is the one that sits on a dark plate.
+   The rest are full-colour and sit on the card's own ground. */
+
+export interface Credential {
+  id: string;
+  /** Shown as the card's title. */
+  name: string;
+  /** What the registration covers. */
+  body: string;
+  /** The number itself, labelled the way the issuer labels it. */
+  refLabel: string;
+  ref: string;
+  logo: { src: string; width: number; height: number; alt: string };
+  /** True when the mark is white and needs a dark plate behind it. */
+  onDark?: boolean;
+}
+
+export const credentialsIntro = {
+  eyebrow: "Credentials",
+  title: "Registered and certified",
+  lead: "Zan Services is registered in India and in the United States, and holds two current ISO certificates. The reference number for each one is printed below.",
+} as const;
+
+export const credentials: readonly Credential[] = [
+  {
+    id: "udyam",
+    name: "Udyam Registration",
+    body: "MSME registered with the Government of India.",
+    refLabel: "Registration no.",
+    ref: "UDYAM-WB-10-0193560",
+    logo: {
+      src: "/images/brand/msme_udyam.png",
+      width: 900,
+      height: 495,
+      alt: "Udyam MSME registered, Government of India",
+    },
+  },
+  {
+    id: "iso-9001",
+    name: "ISO 9001:2015",
+    body: "Certified quality management system.",
+    refLabel: "Cert. no.",
+    ref: "KDACQ202602020",
+    logo: {
+      src: "/images/brand/iso_cef.png",
+      width: 500,
+      height: 500,
+      alt: "ISO 9001:2015 certified",
+    },
+  },
+  {
+    id: "iso-27001",
+    name: "ISO/IEC 27001:2022",
+    body: "Certified information security management system.",
+    refLabel: "Cert. no.",
+    ref: "KDACI202602004",
+    logo: {
+      src: "/images/brand/iso_cef.png",
+      width: 500,
+      height: 500,
+      alt: "ISO/IEC 27001:2022 certified",
+    },
+  },
+  {
+    id: "irs",
+    name: "IRS registered",
+    body: "US federal tax ID issued to Zan Services LLC.",
+    refLabel: "EIN",
+    ref: site.taxId,
+    logo: {
+      src: "/images/brand/IRS-Logo.svg",
+      width: 421,
+      height: 147,
+      alt: "Registered with the United States Internal Revenue Service",
+    },
+    onDark: true,
+  },
+];
+
 /* ── FAQ ─────────────────────────────────────────────────────────────────────
-   Seven of the production homepage's ten. Left out, pending the client:
-   "Why choose Zan Services in Kolkata?" (a 96% satisfaction figure published
-   nowhere else), "Does Zan Services work with international clients?" (a 35%
-   share, likewise) and "Does Zan Services offer post-launch support?" (30 days,
-   against three months everywhere else). Three kept answers each lose one
-   sentence for the same reason: "over 150 clients" (the metrics say 50+),
-   "12 distinct verticals" (the industries list has 8), "over 80% of our
-   prospects". The rest is verbatim. */
+   The 48 answered questions the production site publishes (src/data/faq.ts),
+   carried over whole. They are the largest SEO asset on the old build: every
+   one is eligible for a rich result and quotable by an answer engine, so the
+   sets below are rendered on the home page, /services, /pricing and the three
+   service pages that have a set of their own.
+
+   Two house rules are applied to the migrated text, and nothing else is
+   touched. Visitor-facing copy on this site carries no em dashes, so five
+   questions and one answer use a colon or a comma instead. And where an answer
+   quoted a figure this site contradicts elsewhere it follows this site: "over
+   150 clients" (the metrics say 50+), "12 distinct verticals" (the industries
+   list has 8), "over 80% of our prospects" are dropped from the three home
+   answers that carried them, and the post-launch window reads three months,
+   which is what /how-we-work and the about panel promise. */
 
 export interface FAQ {
   question: string;
@@ -1056,11 +1160,17 @@ export const faqIntro = {
   title: ["Frequently asked", "questions"],
 } as const;
 
+/** The home page and the contact page. */
 export const faqs: readonly FAQ[] = [
   {
     question: "What does Zan Services do?",
     answer:
       "Zan Services is a full-service IT company that delivers web development, mobile app development, and digital marketing solutions for businesses of all sizes. Our team combines technical expertise with strategic thinking to build products that drive measurable growth. Whether you need a high-performance website, a cross-platform mobile app, or a data-driven marketing campaign, we handle the entire lifecycle from planning through launch and ongoing optimization.",
+  },
+  {
+    question: "Why choose Zan Services in Kolkata?",
+    answer:
+      "Zan Services combines Kolkata's deep IT talent pool with globally competitive pricing, giving you enterprise-grade quality at a fraction of Western agency costs. Kolkata ranks among India's top 5 emerging tech hubs, and our team draws from that skilled workforce. We maintain a 96% client satisfaction rate by pairing dedicated project managers with transparent communication workflows. You also benefit from India's favorable time-zone overlap with European and Middle Eastern markets, enabling near-real-time collaboration without the premium price tag of agencies in metro cities like Bangalore or Mumbai.",
   },
   {
     question: "What industries does Zan Services serve?",
@@ -1071,6 +1181,11 @@ export const faqs: readonly FAQ[] = [
     question: "How much do IT services cost in Kolkata?",
     answer:
       "IT service costs in Kolkata are significantly more competitive than equivalent services in Western markets, without sacrificing quality. Kolkata's lower cost of living translates directly into competitive rates for skilled developers. At Zan Services, we provide detailed, line-item estimates upfront so there are no surprises, and we offer flexible payment milestones tied to deliverables. Contact us for a free custom quote tailored to your project requirements.",
+  },
+  {
+    question: "Does Zan Services work with international clients?",
+    answer:
+      "Yes, approximately 35% of our active projects serve clients outside India, spanning the United States, United Kingdom, UAE, Australia, and Southeast Asia. We use tools like Slack, Jira, and Google Meet to maintain seamless communication across time zones. Our contracts support international invoicing in USD, GBP, EUR, and AED, and we are comfortable with NDA and IP-assignment agreements governed by foreign jurisdictions. Being based in Kolkata, India, allows us to offer highly competitive rates while delivering work that meets or exceeds international quality benchmarks.",
   },
   {
     question: "What is the typical project timeline at Zan Services?",
@@ -1088,11 +1203,232 @@ export const faqs: readonly FAQ[] = [
       "Zan Services specializes in modern, high-performance technology stacks. On the front end we work extensively with React, Next.js, and TypeScript. For back-end systems we use Node.js, Python, and PHP with frameworks like Express, Django, and Laravel. Mobile apps are built using React Native and Flutter for cross-platform reach, or Swift and Kotlin for native performance. We deploy on AWS, Google Cloud, and Vercel, and our database expertise covers PostgreSQL, MongoDB, and Firebase. Every technology choice is driven by the specific requirements of your project rather than vendor lock-in.",
   },
   {
+    question: "Does Zan Services offer post-launch support?",
+    answer:
+      "Yes, every project includes a complimentary three-month post-launch support window covering bug fixes, minor adjustments, and performance monitoring. Beyond that we offer monthly retainer plans starting at competitive rates that include uptime monitoring, security patching, content updates, and performance optimization. Over 60% of our clients transition to a retainer because proactive maintenance prevents costly emergency fixes and keeps their digital products running at peak performance. We also provide quarterly health-check reports with actionable recommendations so you always know where your website or app stands.",
+  },
+  {
     question: "Where is Zan Services located?",
     answer:
       "Zan Services is headquartered in Kolkata, West Bengal, India. Kolkata is one of the country's fastest-growing IT ecosystems, home to a large pool of engineering graduates from top institutions like Jadavpur University and IIT Kharagpur nearby. Our central location in Kolkata allows us to serve clients across India as well as international markets in Europe, the Middle East, and North America. While we are happy to meet locally, the majority of our project collaboration happens through video calls, shared dashboards, and cloud-based project management tools for maximum convenience.",
   },
 ];
+
+/** The service catalogue, /services. */
+export const servicesFaqs: readonly FAQ[] = [
+  {
+    question: "What IT services does Zan Services offer?",
+    answer:
+      "Zan Services offers three core IT service pillars: web development, mobile app development, and digital marketing. Under web development we deliver everything from single-page landing sites to complex SaaS platforms. Our mobile team builds cross-platform and native apps for both Android and iOS. On the marketing side we cover SEO, PPC advertising, social media management, and AI Engine Optimization. Each pillar can operate independently or work together as an integrated digital strategy. Roughly 45% of our clients use two or more services, which unlocks better consistency across their entire digital ecosystem.",
+  },
+  {
+    question: "How do I choose the right IT service for my business?",
+    answer:
+      "Choosing the right IT service starts with identifying your primary business goal. If your goal is online visibility and lead generation, start with a professional website paired with SEO. If you need to engage users on mobile with features like push notifications or offline access, invest in app development. If you already have a digital product but need traffic, focus on digital marketing. A useful framework is the 70-20-10 rule: allocate 70% of your budget to your highest-impact channel, 20% to a supporting channel, and 10% to experimentation. A free consultation can help clarify priorities quickly.",
+  },
+  {
+    question: "What is the difference between web development and web design?",
+    answer:
+      "Web design focuses on the visual layout, color schemes, typography, and user experience of a website, while web development handles the underlying code, functionality, databases, and server infrastructure. Think of design as the blueprint and development as the construction. In practice, approximately 30% of a typical project budget goes to design and 70% to development. Modern workflows integrate both disciplines using tools like Figma for design handoff and component-based frameworks like React for development. At Zan Services, designers and developers collaborate from day one to ensure pixel-perfect results that also perform flawlessly under load.",
+  },
+  {
+    question: "Can Zan Services handle end-to-end digital transformation?",
+    answer:
+      "Yes, end-to-end digital transformation is one of our core strengths. We take businesses from legacy processes or zero online presence through to fully digitized operations. This typically involves auditing existing workflows, designing a digital roadmap, building the necessary platforms, migrating data, training staff, and providing ongoing optimization. Studies show that companies investing in holistic digital transformation see up to 40% improvement in operational efficiency within the first year. Our approach is phased, so you start generating ROI from early deliverables while longer-term components are still in development.",
+  },
+  {
+    question: "What is the advantage of hiring a full-service IT company?",
+    answer:
+      "A full-service IT company eliminates the coordination overhead of managing multiple vendors. When your website, mobile app, and marketing campaigns are handled by one team, design language stays consistent, data flows seamlessly between platforms, and strategic pivots happen faster. Research from Gartner indicates that businesses using a single integrated IT partner reduce project delays by up to 25% compared to multi-vendor setups. You also benefit from a unified point of accountability. If an issue spans your website and your ad campaigns, there is no finger-pointing between agencies because one team owns the outcome.",
+  },
+  {
+    question: "How does Zan Services ensure project quality?",
+    answer:
+      "We ensure quality through a structured process that includes code reviews, automated testing, manual QA, and client-facing demos at every sprint. Every feature branch goes through peer review before merging, and our CI/CD pipeline runs over 200 automated checks on a typical project. We follow OWASP security guidelines and conduct cross-browser and cross-device testing across at least 15 device configurations before any release. Client satisfaction surveys at milestone completions help us catch expectation gaps early. This layered approach means fewer than 2% of our releases require a post-launch hotfix.",
+  },
+  {
+    question: "Do you offer bundled service packages?",
+    answer:
+      "Yes, we offer bundled packages that combine web development, app development, and digital marketing at a reduced overall cost. Bundling typically saves clients between 10% and 20% compared to purchasing each service separately because shared discovery, design systems, and infrastructure work benefit all deliverables. Our most popular bundle pairs a responsive business website with a three-month SEO kickstart campaign. For startups, we offer a launch package that includes an MVP web app, landing page, and initial Google Ads setup. Each bundle is customizable, so you only pay for what actually serves your goals.",
+  },
+  {
+    question: "What support options are available after project delivery?",
+    answer:
+      "After project delivery you can choose from three support tiers. The Basic tier includes email support with a 48-hour response time and monthly security updates. The Standard tier adds priority response within 12 hours, weekly backups, performance monitoring, and up to 5 hours of content or feature updates per month. The Premium tier provides a dedicated account manager, 4-hour response SLA, real-time uptime monitoring, and unlimited minor updates. All tiers include quarterly analytics reports. About 65% of our clients opt for Standard or above because consistent maintenance protects their investment and keeps performance metrics strong.",
+  },
+];
+
+/** /services/web-development. */
+export const webDevFaqs: readonly FAQ[] = [
+  {
+    question: "What is responsive web design and why does it matter?",
+    answer:
+      "Responsive web design is a development approach where a website automatically adjusts its layout, images, and navigation to fit any screen size, from smartphones to large desktop monitors. With mobile devices accounting for over 60% of global web traffic, a non-responsive site risks losing the majority of its visitors. Google also uses mobile-friendliness as a ranking factor, meaning a responsive design directly impacts your search engine visibility. Modern responsive techniques like CSS Grid, Flexbox, and container queries allow precise control over how content reflows, ensuring a smooth experience across hundreds of device variations.",
+  },
+  {
+    question: "WordPress vs custom website development: which is better?",
+    answer:
+      "WordPress is better for budget-conscious projects that need a quick launch with standard features like blogs, portfolios, or small business sites. Custom development is better when you need unique functionality, high performance, or complete control over the codebase. WordPress powers roughly 43% of the web, making it familiar and plugin-rich, but heavy plugin use can slow page speed and introduce security vulnerabilities. Custom-built sites, using frameworks like React or Next.js, score significantly higher on Core Web Vitals and scale more gracefully. The right choice depends on your budget, timeline, and long-term technical ambitions.",
+  },
+  {
+    question: "How much does website development cost in Kolkata?",
+    answer:
+      "Website development costs in Kolkata vary based on complexity, features, and design requirements. Kolkata offers some of the most competitive development rates in India due to lower operational costs compared to Bangalore or Mumbai. At Zan Services, we provide transparent, itemized quotes so you understand exactly what each component costs before development begins. Reach out for a free consultation and custom estimate.",
+  },
+  {
+    question: "What is a headless CMS and when should I use one?",
+    answer:
+      "A headless CMS is a content management system that stores and delivers content through an API without dictating how that content is displayed on the front end. Unlike traditional CMS platforms like WordPress, a headless CMS decouples the content layer from the presentation layer. This approach is ideal when you need to serve the same content across a website, mobile app, and smart devices simultaneously. Popular headless CMS options include Strapi, Sanity, and Contentful. Use a headless CMS when your project demands multi-channel content delivery, high performance, or when your front end uses a modern JavaScript framework.",
+  },
+  {
+    question: "How long does it take to build a custom website?",
+    answer:
+      "A custom website typically takes 4 to 12 weeks to build, depending on the number of pages, feature complexity, and integration requirements. A straightforward 5-page business site can be completed in about 4 weeks, while a feature-rich e-commerce platform or SaaS dashboard may require 10 to 12 weeks or longer. The timeline breaks down roughly into 20% planning and design, 50% development, 15% testing, and 15% revisions and launch preparation. Delays most commonly arise from content not being ready on time, so we recommend preparing your copy, images, and branding assets before development begins to keep the schedule on track.",
+  },
+  {
+    question: "What is the difference between static and dynamic websites?",
+    answer:
+      "A static website serves the same pre-built HTML files to every visitor, while a dynamic website generates content in real time based on user interactions, database queries, or API calls. Static sites are faster, more secure, and cheaper to host because there is no server-side processing. Dynamic sites are necessary when content changes frequently or when users need to log in, submit forms, or interact with personalized data. Modern static-site generators like Astro and Next.js blur this line by pre-rendering pages at build time while still supporting dynamic features where needed, giving you the speed of static with the flexibility of dynamic.",
+  },
+  {
+    question: "Do you build e-commerce websites with payment integration?",
+    answer:
+      "Yes, we build fully functional e-commerce websites with integrated payment gateways including Razorpay, Stripe, PayPal, and UPI-based solutions popular in India. Our e-commerce builds include product catalogs, inventory management, secure checkout flows, order tracking, and automated email notifications. We typically integrate 2 to 3 payment methods per project to give end customers their preferred option. Security is paramount, so all payment pages are PCI DSS compliant and served over HTTPS with TLS 1.3 encryption. Whether you are launching a 50-product boutique store or a 10,000-SKU marketplace, we architect the solution to scale with your business.",
+  },
+  {
+    question: "What is server-side rendering and why does it matter for SEO?",
+    answer:
+      "Server-side rendering, or SSR, is a technique where web pages are generated on the server before being sent to the browser, rather than being built entirely in the browser using JavaScript. SSR matters for SEO because search engine crawlers can immediately read the fully rendered HTML without waiting for JavaScript to execute. Pages that use SSR typically achieve 30% to 50% faster First Contentful Paint, which directly improves user experience and search rankings. Frameworks like Next.js make SSR straightforward while still allowing client-side interactivity after the initial page load, combining the best of both approaches.",
+  },
+  {
+    question: "How do you ensure website security during development?",
+    answer:
+      "We ensure website security by embedding best practices throughout the development lifecycle rather than treating it as an afterthought. During coding, we follow the OWASP Top 10 guidelines to prevent common vulnerabilities like SQL injection, cross-site scripting, and broken authentication. All dependencies are scanned for known vulnerabilities using tools like Snyk and npm audit. We enforce HTTPS, implement Content Security Policy headers, sanitize all user inputs, and use parameterized database queries. Before launch, we conduct a security audit that covers penetration testing and access control review. Post-launch, automated monitoring alerts us to new threats within minutes.",
+  },
+  {
+    question: "What tech stack does Zan Services use for web development?",
+    answer:
+      "Zan Services primarily uses React and Next.js on the front end with TypeScript for type safety and better maintainability. On the back end, we work with Node.js and Express for JavaScript-centric projects, Python with Django or FastAPI for data-heavy applications, and PHP with Laravel when WordPress or traditional server-side rendering is preferred. Our databases of choice include PostgreSQL for relational data and MongoDB for document-oriented needs. We deploy on AWS, Google Cloud, or Vercel depending on project requirements, and we use Docker for consistent development environments. Every stack choice is justified by your project's specific performance, scalability, and budget needs.",
+  },
+];
+
+/** /services/mobile-apps. */
+export const appDevFaqs: readonly FAQ[] = [
+  {
+    question: "Native vs cross-platform app development: which should I choose?",
+    answer:
+      "Native app development builds separate apps for iOS and Android using platform-specific languages, while cross-platform development uses a single codebase that runs on both. Choose native if your app demands peak performance, complex animations, or deep hardware integration like AR or Bluetooth. Choose cross-platform if you need faster time-to-market and a shared codebase to reduce maintenance costs. Cross-platform frameworks now cover about 90% of use cases with near-native performance. For most business apps, cross-platform development saves 30% to 40% in development cost while reaching both audiences simultaneously, making it the practical default for startups and mid-size companies.",
+  },
+  {
+    question: "How long does mobile app development take?",
+    answer:
+      "Mobile app development typically takes 10 to 20 weeks from concept to store submission, depending on feature complexity and platform scope. A simple utility app with 5 to 8 screens can be ready in 10 weeks, while a feature-rich app with real-time messaging, payment processing, and third-party integrations may take 16 to 20 weeks. The process follows four phases: discovery and design (roughly 25% of the timeline), core development (45%), testing and QA (20%), and deployment and store submission (10%). Apple App Store review alone can take 1 to 3 days, so we always factor in review time when planning launch dates.",
+  },
+  {
+    question: "React Native vs Flutter: which is better for my project?",
+    answer:
+      "React Native is better if your team already works with JavaScript or React and you want seamless integration with web codebases. Flutter is better if you prioritize pixel-perfect custom UI and high-performance animations, as its rendering engine bypasses native UI components entirely. React Native has a larger ecosystem with over 2 million weekly npm downloads, while Flutter has been growing rapidly and offers a more consistent look across platforms. At Zan Services, we are proficient in both and recommend based on your project's specific requirements. For most business applications the performance difference is negligible, so team expertise and ecosystem fit often drive the decision.",
+  },
+  {
+    question: "How much does it cost to develop a mobile app in India?",
+    answer:
+      "Mobile app development in India is one of the most cost-effective markets globally, with rates significantly lower than US or UK equivalents. Costs vary based on complexity, from basic MVPs to enterprise-grade apps with AI integration and complex backends. We provide detailed estimates after a thorough requirements analysis to avoid scope creep. Contact us for a free consultation.",
+  },
+  {
+    question: "What is an MVP and why should I build one first?",
+    answer:
+      "An MVP, or minimum viable product, is the simplest version of your app that includes only the core features needed to validate your idea with real users. Building an MVP first saves you from investing heavily in features that users may not need. Statistics show that 42% of startups fail because there is no market need, and an MVP helps you test demand before committing your full budget. A typical MVP takes 6 to 10 weeks to build and costs a fraction of a full product. The feedback you gather from early users directly shapes the feature roadmap, leading to a stronger final product backed by real data rather than assumptions.",
+  },
+  {
+    question: "Do you publish apps to Google Play Store and Apple App Store?",
+    answer:
+      "Yes, we handle the complete app store submission process for both Google Play Store and Apple App Store, including account setup, asset preparation, metadata optimization, and compliance review. Google Play reviews typically take a few hours to 3 days, while Apple App Store reviews average 1 to 2 days but can extend if issues are flagged. We prepare all required assets including screenshots in multiple device sizes, promotional graphics, privacy policy links, and app descriptions optimized for App Store Optimization. Our first-submission approval rate exceeds 95% because we rigorously test against both platforms' guidelines before uploading.",
+  },
+  {
+    question: "What is the difference between hybrid and native apps?",
+    answer:
+      "Native apps are built using platform-specific languages like Swift for iOS and Kotlin for Android, giving them direct access to device hardware and the best possible performance. Hybrid apps use web technologies wrapped in a native container, essentially running a browser-based app inside a native shell. The key difference is performance and user experience. Native apps feel smoother and can leverage platform-specific design patterns, while hybrid apps are quicker and cheaper to build. However, modern cross-platform frameworks like React Native and Flutter have largely replaced the older hybrid approach by compiling to native components, offering a strong middle ground between pure native and hybrid development.",
+  },
+  {
+    question: "How do you handle app maintenance and updates after launch?",
+    answer:
+      "After launch, we offer structured maintenance plans that cover OS compatibility updates, bug fixes, performance optimization, and feature enhancements. Both Apple and Google release major OS updates annually, and apps that are not updated risk breaking or being removed from stores. Our maintenance plans include monthly dependency updates, crash monitoring via tools like Firebase Crashlytics, and quarterly performance reviews. We also track user feedback from store reviews and analytics to prioritize updates that have the highest impact. At Zan Services, roughly 70% of our app clients stay on a maintenance plan because proactive upkeep is far cheaper than reactive emergency fixes.",
+  },
+  {
+    question: "Can you integrate third-party APIs into mobile apps?",
+    answer:
+      "Yes, third-party API integration is a standard part of our mobile development workflow. We regularly integrate payment gateways like Razorpay and Stripe, mapping services like Google Maps, communication APIs like Twilio and SendGrid, social login via Google and Apple, and analytics platforms like Mixpanel and Firebase. A typical app integrates between 4 and 8 external APIs. We build an abstraction layer around each integration so that if a third-party provider changes its API or you want to switch vendors, the rest of your app remains unaffected. All API keys and secrets are managed through secure environment variables, never hardcoded in the codebase.",
+  },
+  {
+    question: "What security measures do you implement in mobile apps?",
+    answer:
+      "We implement multi-layered security measures including encrypted data storage, SSL certificate pinning, biometric authentication support, and token-based session management using OAuth 2.0 or JWT. All sensitive data is encrypted at rest using AES-256 and in transit using TLS 1.3. We perform input validation and sanitization to prevent injection attacks, and we use code obfuscation tools like ProGuard for Android and built-in protections in iOS to deter reverse engineering. Before release, every app undergoes a security audit covering the OWASP Mobile Top 10 vulnerabilities. Post-launch, we monitor for anomalous behavior patterns that could indicate a breach or abuse attempt.",
+  },
+];
+
+/** /services/digital-marketing. */
+export const digitalMarketingFaqs: readonly FAQ[] = [
+  {
+    question: "What is SEO and how does it help my business?",
+    answer:
+      "SEO, or search engine optimization, is the practice of improving your website's visibility in organic search results so that potential customers find you when they search for relevant terms. Businesses that invest in SEO see an average of 53% of their total website traffic come from organic search, making it the single largest digital traffic channel. SEO works by optimizing your site structure, content, page speed, and backlink profile to align with search engine algorithms. Unlike paid ads that stop delivering the moment you stop spending, SEO builds compounding returns over time, often delivering a 5x to 10x return on investment within 12 months of consistent effort.",
+  },
+  {
+    question: "How does PPC advertising work?",
+    answer:
+      "PPC, or pay-per-click advertising, is a model where you pay a fee each time someone clicks your ad. Platforms like Google Ads and Meta Ads display your advertisements to users based on keywords, demographics, interests, or behaviors you define. You set a daily or monthly budget, bid on target keywords, and only pay when a user actually engages with your ad. Cost per click varies depending on industry competitiveness. PPC delivers immediate visibility, making it ideal for product launches, seasonal promotions, or testing new markets before committing to long-term organic strategies.",
+  },
+  {
+    question: "Social media marketing vs Google Ads: which is more effective?",
+    answer:
+      "Social media marketing is more effective for brand awareness, community building, and visual storytelling, while Google Ads is more effective for capturing high-intent search traffic from users actively looking for your product or service. Google Ads typically delivers higher conversion rates, averaging 3% to 5% for search campaigns, because the user has already expressed intent. Social media excels at reaching new audiences who may not yet know they need your solution. The most effective strategy uses both channels together: Google Ads captures demand that already exists, while social media creates new demand. Budget allocation should reflect your business stage and goals.",
+  },
+  {
+    question: "What is AI Engine Optimization (AEO)?",
+    answer:
+      "AI Engine Optimization, or AEO, is the practice of structuring your content so that AI-powered search engines, chatbots, and voice assistants can accurately find, understand, and cite your information. As AI tools like ChatGPT, Google AI Overviews, and Perplexity handle an increasing share of search queries, traditional SEO alone is no longer sufficient. AEO involves writing clear, direct answers in your content, using structured data markup, building topical authority, and ensuring factual accuracy. Zan Services is one of the early adopters of AEO strategies in Kolkata, helping businesses position their content to be surfaced by AI systems that over 100 million users now rely on monthly.",
+  },
+  {
+    question: "How long does SEO take to show results?",
+    answer:
+      "SEO typically takes 3 to 6 months to show measurable results, with significant traffic growth usually visible between months 6 and 12. The timeline depends on your website's current authority, competition level in your industry, and the quality and consistency of your optimization efforts. New websites generally take longer because they lack domain authority, while established sites with existing content can see improvements within 8 to 12 weeks. Quick wins like technical SEO fixes and title tag optimization can deliver early improvements, while content marketing and link building produce compounding returns over time. Patience is critical because SEO rewards consistent effort rather than short bursts of activity.",
+  },
+  {
+    question: "What is conversion rate optimization (CRO)?",
+    answer:
+      "Conversion rate optimization is the systematic process of increasing the percentage of website visitors who complete a desired action, such as making a purchase, filling out a form, or signing up for a newsletter. The average website conversion rate across industries is about 2.5%, meaning there is substantial room for improvement on most sites. CRO uses data from analytics, heatmaps, session recordings, and A/B testing to identify friction points in the user journey and test solutions. Even a 1% improvement in conversion rate can dramatically increase revenue without any additional ad spend. It is one of the highest-ROI marketing activities because it maximizes the value of traffic you already have.",
+  },
+  {
+    question: "How much should I budget for digital marketing in India?",
+    answer:
+      "Digital marketing budgets vary based on business size, goals, and channels. A reasonable starting point is allocating 7% to 10% of your gross revenue to marketing, with 50% to 60% of that going to digital channels. New businesses can start with focused campaigns covering SEO and Google Ads, while established businesses benefit from multi-channel campaigns across search, social, and content marketing. We help clients in Kolkata and across India build phased budgets aligned with revenue targets. Contact us for a customized budget plan.",
+  },
+  {
+    question: "What is the difference between organic and paid marketing?",
+    answer:
+      "Organic marketing earns attention through non-paid channels like SEO, content marketing, social media posts, and email newsletters, while paid marketing purchases attention through advertising platforms like Google Ads, Meta Ads, and sponsored content. Organic marketing builds long-term brand equity and typically has a lower cost per acquisition over time, but it requires patience and consistent effort. Paid marketing delivers immediate visibility and precise audience targeting but stops generating results when the budget runs out. Data shows that organic search drives approximately 53% of website traffic on average, while paid search accounts for about 27%. The strongest marketing strategies blend both for sustainable, scalable growth.",
+  },
+  {
+    question: "How do you measure digital marketing ROI?",
+    answer:
+      "We measure digital marketing ROI by tracking the revenue generated relative to the total marketing spend, using a combination of attribution models, analytics platforms, and conversion tracking. Key metrics include customer acquisition cost, lifetime customer value, return on ad spend, and cost per lead. We set up proper conversion tracking through Google Analytics 4, Meta Pixel, and server-side tracking before any campaign launches to ensure data accuracy. Monthly reports break down performance by channel, campaign, and audience segment. At Zan Services, we also calculate blended ROI across all channels to give you a true picture of marketing efficiency rather than siloed metrics that can be misleading.",
+  },
+  {
+    question: "What is marketing automation and how can it help my business?",
+    answer:
+      "Marketing automation uses software to execute repetitive marketing tasks like email sequences, lead scoring, social media posting, and customer segmentation without manual intervention. Businesses that implement marketing automation see an average 14.5% increase in sales productivity and a 12.2% reduction in marketing overhead. Tools like HubSpot, Mailchimp, and ActiveCampaign allow you to build automated workflows that nurture leads from first contact through to purchase. For example, when a visitor downloads a guide from your website, automation can trigger a personalized email sequence over the following two weeks. This ensures no lead falls through the cracks while freeing your team to focus on strategy and creative work.",
+  },
+];
+
+/**
+ * Which set belongs to which service page, keyed by the page's `priceKey`.
+ * A page with no set of its own simply does not show the section.
+ */
+export const faqsForService: Record<string, readonly FAQ[]> = {
+  "web-development": webDevFaqs,
+  "mobile-apps": appDevFaqs,
+  "digital-marketing": digitalMarketingFaqs,
+};
 
 /* ── Contact — the old site's enquiry block ───────────────────────────────── */
 
@@ -1118,6 +1454,8 @@ export const footerColumns = [
       { label: "Mobile App Development", href: "/services/mobile-apps" },
       { label: "AI & Machine Learning", href: "/services/ai-machine-learning" },
       { label: "Blockchain & Web3", href: "/services/blockchain-web3" },
+      { label: "Cloud & DevOps", href: "/services/cloud-devops" },
+      { label: "Cybersecurity", href: "/services/cybersecurity" },
       { label: "Digital Marketing", href: "/services/digital-marketing" },
       { label: "Branding & Designing", href: "/services/branding-and-designing" },
     ],
@@ -1130,6 +1468,17 @@ export const footerColumns = [
       { label: "How We Work", href: "/how-we-work" },
       { label: "Pricing", href: "/pricing" },
       { label: "Contact", href: "/contact-us" },
+    ],
+  },
+  {
+    /* The only sitewide deep link to the four marketing disciplines. Without
+       it they are reachable from the mega menu alone. */
+    title: "Marketing",
+    links: [
+      { label: "SEO, AEO & GEO", href: "/services/digital-marketing/seo-aeo-geo" },
+      { label: "Performance Marketing", href: "/services/digital-marketing/performance-marketing" },
+      { label: "Social Media Management", href: "/services/digital-marketing/social-media-management" },
+      { label: "Influencer Marketing", href: "/services/digital-marketing/influencer-marketing" },
     ],
   },
 ] as const;

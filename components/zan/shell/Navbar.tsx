@@ -17,6 +17,7 @@ import { ctas, mainNav, site } from "@/constants/zan";
 import { ButtonLink } from "@/components/zan/ui/Button";
 import { ZanLogo } from "@/components/zan/ui/ZanLogo";
 import { SiteLink } from "@/components/zan/services/SiteLinks";
+import { splitRegion } from "@/lib/links";
 import { useSiteHref } from "@/lib/useSiteHref";
 import { useRegion } from "@/lib/region";
 import { cn } from "@/lib/utils";
@@ -76,9 +77,12 @@ function useNavScrolled() {
 const HOVER_OPEN_MS = 110;
 const HOVER_CLOSE_MS = 220;
 
-/** The tab for the page being read, and for every page under it. */
-const onPath = (pathname: string, href: string) =>
-  href !== "/" && (pathname === href || pathname.startsWith(`${href}/`));
+/** The tab for the page being read, and for every page under it. The path is
+    compared with its region prefix off, so /ae/services lights Services. */
+const onPath = (pathname: string, href: string) => {
+  const here = splitRegion(pathname).path;
+  return href !== "/" && (here === href || here.startsWith(`${href}/`));
+};
 
 /**
  * The company bar: logo (back to the top of this page), the four tabs —

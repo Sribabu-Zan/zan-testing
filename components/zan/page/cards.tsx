@@ -41,6 +41,7 @@ export function ServiceCard({
   icon,
   index,
   capabilities,
+  price,
   delay = 0,
 }: {
   href: string;
@@ -50,6 +51,8 @@ export function ServiceCard({
   icon?: IconKey;
   index?: string;
   capabilities?: readonly string[];
+  /** The page's starting price, resolved server-side. Sits in the footer. */
+  price?: ReactNode;
   delay?: number;
 }) {
   return (
@@ -77,12 +80,20 @@ export function ServiceCard({
           </ul>
         )}
 
-        <span className="mt-6 inline-flex items-center gap-1.5 text-small font-medium text-ink">
-          Read more
-          <ArrowUpRight
-            aria-hidden="true"
-            className="size-4 text-brand-ink transition-transform duration-300 ease-out-expo group-hover/card:translate-x-0.5 group-hover/card:-translate-y-0.5"
-          />
+        <span
+          className={cn(
+            "mt-6 flex items-center gap-4 text-small font-medium text-ink",
+            price ? "justify-between border-t border-line pt-5" : "",
+          )}
+        >
+          <span className="inline-flex items-center gap-1.5">
+            Read more
+            <ArrowUpRight
+              aria-hidden="true"
+              className="size-4 text-brand-ink transition-transform duration-300 ease-out-expo group-hover/card:translate-x-0.5 group-hover/card:-translate-y-0.5"
+            />
+          </span>
+          {price && <span className="shrink-0 text-brand-ink tabular-nums">{price}</span>}
         </span>
       </SiteLink>
     </Reveal>

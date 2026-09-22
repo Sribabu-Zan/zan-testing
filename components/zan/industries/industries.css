@@ -1,5 +1,9 @@
-/* Industries — the tilted grid's starfield and the intro's scroll cue.
-   Every colour is a token, so all of it follows the region. */
+/* Industries — the starfield behind the section and the three layouts of the
+   industry carousel. Every colour is a token, so all of it follows the region.
+
+   Source order matters: the phone slider is the base, the desktop rotator
+   overrides it, and the reduced-motion grid overrides both, so it must stay
+   last in this file. */
 
 @keyframes zan-ind-twinkle {
   0%,
@@ -19,40 +23,213 @@
   will-change: opacity;
 }
 
-.zan-ind-line {
-  animation: zan-ind-line 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+/* ── 1. Base: the phone slider ───────────────────────────────────────────── */
+
+.zan-ind-stage {
+  --zan-card-w: min(20rem, 78vw);
+  --zan-card-h: calc(var(--zan-card-w) * 4 / 3);
 }
-@keyframes zan-ind-line {
-  0% {
-    transform: translateY(-100%);
+
+.zan-ind-track {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  list-style: none;
+  padding: 1rem max(1.25rem, calc((100% - var(--zan-card-w)) / 2)) 1.75rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.zan-ind-track::-webkit-scrollbar {
+  display: none;
+}
+.zan-ind-track:focus-visible {
+  outline: 2px solid var(--color-brand-ink);
+  outline-offset: 6px;
+  border-radius: 1.75rem;
+}
+
+.zan-ind-slide {
+  flex: 0 0 auto;
+  width: var(--zan-card-w);
+  scroll-snap-align: center;
+}
+
+.zan-ind-card {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-float);
+  isolation: isolate;
+}
+
+/* Depth on the rotator: a wash of the page ground over cards off the centre.
+   Composited, so dragging stays on the compositor. */
+.zan-ind-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: inherit;
+  background: var(--color-bg);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.zan-ind-arrow {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-line);
+  background: var(--color-bg);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-lift);
+  transition:
+    transform 0.35s var(--ease-out-expo),
+    border-color 0.3s ease,
+    color 0.3s ease;
+}
+.zan-ind-arrow:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand-ink);
+  transform: translateY(-2px);
+}
+.zan-ind-arrow:active {
+  transform: translateY(0) scale(0.94);
+}
+
+.zan-ind-dot {
+  display: block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--color-line-strong);
+  transition:
+    width 0.45s var(--ease-out-expo),
+    background-color 0.3s ease;
+}
+.zan-ind-dot:hover {
+  background: var(--color-brand-ink);
+}
+.zan-ind-dot[aria-current="true"] {
+  width: 1.375rem;
+  background: var(--color-brand);
+}
+
+.zan-ind-ground {
+  display: none;
+}
+
+/* ── 2. ≥768px: the 3D rotator ───────────────────────────────────────────── */
+
+@media (min-width: 768px) {
+  .zan-ind-stage {
+    --zan-card-w: clamp(16rem, 21vw, 21rem);
   }
-  100% {
-    transform: translateY(250%);
+
+  .zan-ind-track {
+    display: block;
+    position: relative;
+    height: var(--zan-card-h);
+    padding: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+    perspective: 1500px;
+    perspective-origin: 50% 46%;
+    touch-action: pan-y;
+    cursor: grab;
+  }
+  .zan-ind-track:active {
+    cursor: grabbing;
+  }
+
+  .zan-ind-slide {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: var(--zan-card-w);
+    margin-left: calc(var(--zan-card-w) / -2);
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+  }
+
+  /* The deck's contact shadow, under the card in focus. */
+  .zan-ind-ground {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: calc(var(--zan-card-h) + 0.25rem);
+    width: calc(var(--zan-card-w) * 1.12);
+    height: 2.75rem;
+    transform: translateX(-50%);
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, rgb(17 16 22 / 0.16) 0%, rgb(17 16 22 / 0) 72%);
+  }
+
+  .zan-ind-arrow {
+    width: 2.75rem;
+    height: 2.75rem;
   }
 }
 
-.zan-ind-bounce {
-  animation: zan-ind-bounce 1.8s ease-in-out infinite;
-}
-@keyframes zan-ind-bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.55;
-  }
-  50% {
-    transform: translateY(4px);
-    opacity: 1;
-  }
-}
+/* ── 3. Reduced motion: a static grid of every card. Stays last. ─────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .zan-ind-star,
-  .zan-ind-line,
-  .zan-ind-bounce {
-    animation: none;
-  }
   .zan-ind-star {
+    animation: none;
     opacity: 0.6;
+  }
+  .zan-ind-track {
+    display: grid;
+    position: static;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    height: auto;
+    max-width: 66rem;
+    margin-inline: auto;
+    padding: 0;
+    overflow: visible;
+    perspective: none;
+    scroll-snap-type: none;
+    cursor: auto;
+  }
+  .zan-ind-slide {
+    position: static;
+    width: auto;
+    margin-left: 0;
+    will-change: auto;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  .zan-ind-scrim {
+    opacity: 0 !important;
+  }
+  .zan-ind-card {
+    box-shadow: var(--shadow-lift);
+  }
+  .zan-ind-controls,
+  .zan-ind-ground {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (min-width: 640px) {
+  .zan-ind-track {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (min-width: 1024px) {
+  .zan-ind-track {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
   }
 }

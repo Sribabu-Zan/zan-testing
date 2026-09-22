@@ -7,33 +7,45 @@ import { FaqAccordion } from "@/components/zan/contact/FaqAccordion";
 import { OfficeCards } from "@/components/zan/contact/OfficeCard";
 import { Eyebrow } from "@/components/zan/ui/Eyebrow";
 import { HeroPanel } from "@/components/zan/page/HeroPanel";
-import { contactPage, labels } from "@/constants/pages";
+import { contactPage, labels, pageTrail } from "@/constants/pages";
 import { faqIntro, faqs, site } from "@/constants/zan";
 import { pageMetadata } from "@/lib/metadata";
+import { serviceFromPath } from "@/lib/services";
 
-export const metadata: Metadata = pageMetadata({
-  title: contactPage.seoTitle,
-  description: contactPage.seoDescription,
-});
+export function generateMetadata(): Promise<Metadata> {
+  /* NOT `localPlace`: "Offices in Kolkata, Dubai and Sacramento" is a fact in
+     every region, and the page lists all three. */
+  return pageMetadata({
+    title: contactPage.seoTitle,
+    description: contactPage.seoDescription,
+  });
+}
 
-/** The same list the accordion renders, as FAQPage data. */
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqs.map((f) => ({
-    "@type": "Question",
-    name: f.question,
-    acceptedAnswer: { "@type": "Answer", text: f.answer },
-  })),
-};
+/* NO FAQPage MARKUP HERE — deliberately.
 
-export default function ContactPage() {
+   This page renders the same seven questions as the homepage, and it used to
+   mark them up as well. That gave Google two byte-for-byte identical FAQPage
+   nodes on two URLs of one site: it keeps one and discards the other, and the
+   one it keeps is not reliably the homepage, which is the URL with the ranking
+   history. The markup lives on / (components/zan/sections/FAQ.tsx). The
+   accordion below stays exactly as it was — this is a markup change, not a
+   content one. */
+
+export default async function ContactPage({ searchParams }: PageProps<"/contact-us">) {
+  /* A service page's "Get Free Consultation" arrives as
+     /contact-us?from=/services/web-development. Resolved here, on the server,
+     so the enquiry form opens on the right service in the HTML itself rather
+     than correcting itself after hydration. */
+  const { from } = await searchParams;
+  const service = serviceFromPath(typeof from === "string" ? from : undefined);
+
   return (
     <main id="main">
       <PageHero
         eyebrow={contactPage.eyebrow}
         title={contactPage.title}
         lead={contactPage.lead}
+        trail={pageTrail("Contact Us", "/contact-us")}
         aside={
           <HeroPanel title="Talk to us directly">
             <ContactDirect className="flex-col items-stretch justify-start gap-3" />
@@ -49,7 +61,7 @@ export default function ContactPage() {
           <div className="lg:col-span-7">
             {/* Stays in view while the office cards scroll past beside it. */}
             <div className="lg:sticky lg:top-[calc(var(--spacing-nav)+1.5rem)]">
-              <EnquiryForm />
+              <EnquiryForm defaultService={service} />
             </div>
           </div>
           <div className="lg:col-span-5">
@@ -60,10 +72,6 @@ export default function ContactPage() {
       </Section>
 
       <Section id="faq" tone="surface" eyebrow={faqIntro.eyebrow} title={faqIntro.title.join(" ")}>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }}
-        />
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-4">
             <p className="text-lead text-ink-2">

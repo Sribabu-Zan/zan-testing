@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, type KeyboardEvent } from "react";
+import { useRouter } from "next/navigation";
 import { regionOrder, regions, type RegionId } from "@/constants/zan";
+import { splitRegion, withRegion } from "@/lib/links";
 import { setRegion, useRegionId } from "@/lib/region";
 import { cn } from "@/lib/utils";
 
@@ -11,8 +13,13 @@ import { cn } from "@/lib/utils";
  *
  * The thumb is a brand pill that slides between the segments, so switching a
  * region visibly repaints the control itself in the new colour. It only gets
- * its transition a frame after mount: a returning UAE visitor hydrates as "in"
- * and catches up immediately, and that catch-up should not read as a slide.
+ * its transition a frame after mount, so nothing slides on first paint.
+ *
+ * Choosing a region is a navigation, not a repaint: /pricing becomes
+ * /ae/pricing, which is the URL that page is canonical at in the UAE. The
+ * palette is swapped first, by setRegion, so the change is instant and the
+ * route catches up; setRegion also writes the cookie, which is how the server
+ * knows on the next visit not to send this visitor anywhere by country.
  */
 export function RegionSwitcher({
   className,
@@ -24,6 +31,7 @@ export function RegionSwitcher({
   const current = useRegionId();
   const index = regionOrder.indexOf(current);
   const groupRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const el = groupRef.current;
@@ -35,7 +43,14 @@ export function RegionSwitcher({
   }, []);
 
   const choose = (id: RegionId, focus = false) => {
-    if (id !== current) setRegion(id);
+    if (id !== current) {
+      setRegion(id);
+      /* window.location, not usePathname: the proxy rewrites /ae/pricing onto
+         /pricing, so the router's idea of the path can be the bare one while
+         the address bar has the prefix. The address bar is the truth here. */
+      const { pathname, search, hash } = window.location;
+      router.push(`${withRegion(splitRegion(pathname).path, id)}${search}${hash}`);
+    }
     if (focus) groupRef.current?.querySelector<HTMLButtonElement>(`[data-region-option="${id}"]`)?.focus();
   };
 

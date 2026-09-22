@@ -5,22 +5,34 @@ import { Section } from "@/components/zan/page/Section";
 import { FactCard, StepCard } from "@/components/zan/page/cards";
 import { HeroFacts, HeroPanel } from "@/components/zan/page/HeroPanel";
 import { SiteButtonLink } from "@/components/zan/services/SiteLinks";
-import { howWeWorkPage, labels } from "@/constants/pages";
+import { howWeWorkPage, labels, pageTrail } from "@/constants/pages";
 import { about, ctas, processSteps, techDomains, techIntro, whyUs } from "@/constants/zan";
 import { pageMetadata } from "@/lib/metadata";
+import { howToSchema, jsonLd } from "@/lib/schema";
+import { requestRegion } from "@/lib/server-region";
 
-export const metadata: Metadata = pageMetadata({
-  title: howWeWorkPage.seoTitle,
-  description: howWeWorkPage.seoDescription,
-});
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: howWeWorkPage.seoTitle,
+    description: howWeWorkPage.seoDescription,
+  });
+}
 
-export default function HowWeWorkPage() {
+export default async function HowWeWorkPage() {
+  const { region } = await requestRegion();
   return (
     <main id="main">
+      {/* The four steps this page renders, as a HowTo — the one page on the
+          site whose whole content is a procedure. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(howToSchema(region)) }}
+      />
       <PageHero
         eyebrow={howWeWorkPage.eyebrow}
         title={howWeWorkPage.title}
         lead={howWeWorkPage.lead}
+        trail={pageTrail("How We Work", "/how-we-work")}
         aside={
           <HeroPanel title="The engagement">
             <HeroFacts items={about.principles} />

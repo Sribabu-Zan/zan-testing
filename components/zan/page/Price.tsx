@@ -1,18 +1,19 @@
-"use client";
-
 import { pagePriceFor, priceFor, startingPriceFor } from "@/constants/pricing";
-import { useRegionId } from "@/lib/region";
-import { cn } from "@/lib/utils";
+import { requestRegion } from "@/lib/server-region";
+import { cn, stripFrom } from "@/lib/utils";
 
-/* The price tables carry a figure per region, and the region here is an
-   attribute on <html> rather than a URL. So these read it through
-   useRegionId(): the server renders India's figure, and a visitor who has
-   chosen the UAE or the US gets theirs as soon as the page hydrates, the same
-   way the navbar's phone number works. */
+/* The price tables carry a figure per region, and the region is in the URL:
+   proxy.ts resolves it per request and lib/server-region hands it to the
+   server render. So these are server components and await it, rather than
+   reading <html data-region> on the client — the figure a crawler, a no-JS
+   visitor and a shared screenshot see is then the right currency for the page
+   they asked for, not India's, and it never swaps under the reader on
+   hydration. A region switch is a navigation, so the next render is correct. */
 
 /** The headline "from" figure for a service page, or nothing if it has none. */
-export function StartingPrice({ slug, className }: { slug: string; className?: string }) {
-  const price = startingPriceFor(slug, useRegionId());
+export async function StartingPrice({ slug, className }: { slug: string; className?: string }) {
+  const { region } = await requestRegion();
+  const price = startingPriceFor(slug, region);
   if (!price) return null;
   return (
     <span
@@ -28,14 +29,14 @@ export function StartingPrice({ slug, className }: { slug: string; className?: s
 }
 
 /** The price of one package on one page. */
-export function PackagePrice({ slug, title, className }: { slug: string; title: string; className?: string }) {
-  const region = useRegionId();
+export async function PackagePrice({ slug, title, className }: { slug: string; title: string; className?: string }) {
+  const { region } = await requestRegion();
   const price = pagePriceFor(slug, region) ?? priceFor(slug, title, region);
   return <span className={cn("tabular-nums", className)}>{price}</span>;
 }
 
-/** Just the figure, for a table cell. Renders "—" when a page has no price. */
-export function StartingPriceValue({ slug }: { slug: string }) {
-  const price = startingPriceFor(slug, useRegionId());
-  return <span className="tabular-nums">{price ?? "On enquiry"}</span>;
+/** Just the figure, for a table cell or a card footer. */
+export async function StartingPriceValue({ slug, className }: { slug: string; className?: string }) {
+  const { region } = await requestRegion();
+  return <span className={cn("tabular-nums", className)}>{stripFrom(startingPriceFor(slug, region))}</span>;
 }

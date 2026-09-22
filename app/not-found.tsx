@@ -6,10 +6,17 @@ import { notFoundPage } from "@/constants/pages";
 import { ctas, footerColumns } from "@/constants/zan";
 import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = pageMetadata({
-  title: notFoundPage.seoTitle,
-  description: "The page you asked for is not on this site.",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    ...(await pageMetadata({
+      title: notFoundPage.seoTitle,
+      description: "The page you asked for is not on this site.",
+    })),
+    /* The layout gives every page a canonical and its two hreflang alternates.
+       A URL that does not exist should claim none of them, in any region. */
+    alternates: null,
+  };
+}
 
 /** The footer's Company column, which is where a lost visitor usually meant to go. */
 const company = footerColumns.find((c) => c.title === "Company")?.links ?? [];

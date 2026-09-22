@@ -1,19 +1,27 @@
 import type { Metadata } from "next";
 import { ArrowUpRight } from "lucide-react";
+import { FaqAccordion } from "@/components/zan/contact/FaqAccordion";
 import { PageHero } from "@/components/zan/page/PageHero";
+import { StartingPriceValue } from "@/components/zan/page/Price";
 import { Section } from "@/components/zan/page/Section";
 import { Reveal } from "@/components/zan/page/Reveal";
 import { FactCard, ServiceCard, StepCard } from "@/components/zan/page/cards";
 import { HeroLinks, HeroPanel } from "@/components/zan/page/HeroPanel";
 import { SiteButtonLink, SiteLink } from "@/components/zan/services/SiteLinks";
-import { areaPages, childrenOf, servicesPage } from "@/constants/pages";
-import { ctas, processIntro, processSteps, whyUs } from "@/constants/zan";
+import { areaPages, childrenOf, pageTrail, servicesPage } from "@/constants/pages";
+import { ctas, faqIntro, processIntro, processSteps, servicesFaqs, whyUs } from "@/constants/zan";
 import { pageMetadata } from "@/lib/metadata";
+import { faqSchema, jsonLd } from "@/lib/schema";
 
-export const metadata: Metadata = pageMetadata({
-  title: servicesPage.seoTitle,
-  description: servicesPage.seoDescription,
-});
+export function generateMetadata(): Promise<Metadata> {
+  // `localPlace`: the title sells "IT Services & Digital Solutions in Kolkata",
+  // which /ae and /us have no business claiming — see lib/metadata.ts.
+  return pageMetadata({
+    title: servicesPage.seoTitle,
+    description: servicesPage.seoDescription,
+    localPlace: true,
+  });
+}
 
 /* The catalogue, in the three columns the mega menu uses: everything that
    ships code, everything that brings traffic, everything that is designed.
@@ -32,10 +40,18 @@ const groups = [
 export default function ServicesPage() {
   return (
     <main id="main">
+      {/* The eight questions the #faq band below renders, marked up. They are
+          this page's own set, not a slice of the homepage's, so there is no
+          duplicate for Google to discard. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(servicesFaqs)) }}
+      />
       <PageHero
         eyebrow={servicesPage.eyebrow}
         title={servicesPage.title}
         lead={servicesPage.lead}
+        trail={pageTrail("Services", "/services")}
         aside={
           <HeroPanel title="Three practices">
             <HeroLinks
@@ -93,6 +109,7 @@ export default function ServicesPage() {
                       description={page.description}
                       icon={page.icon}
                       index={page.index}
+                      price={<StartingPriceValue slug={page.priceKey} />}
                       delay={Math.min(i, 3) * 0.05}
                     />
                   </li>
@@ -144,6 +161,20 @@ export default function ServicesPage() {
             </li>
           ))}
         </ol>
+      </Section>
+
+      {/* Server-rendered: every question and answer is in the HTML, which is
+          what makes the set worth carrying over at all. */}
+      <Section
+        id="faq"
+        tone="surface"
+        eyebrow={faqIntro.eyebrow}
+        title="Questions about the services"
+        lead="What each practice covers, how to choose between them, and how the work is run."
+      >
+        <div className="lg:mx-auto lg:max-w-4xl">
+          <FaqAccordion items={servicesFaqs} />
+        </div>
       </Section>
     </main>
   );

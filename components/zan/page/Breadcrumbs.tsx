@@ -1,7 +1,8 @@
 import { ChevronRight } from "lucide-react";
 import { SiteLink } from "@/components/zan/services/SiteLinks";
 import { labels } from "@/constants/pages";
-import { site } from "@/constants/zan";
+import { jsonLd } from "@/lib/schema";
+import { regionUrl, requestRegion } from "@/lib/server-region";
 import { cn } from "@/lib/utils";
 
 export interface Crumb {
@@ -10,19 +11,30 @@ export interface Crumb {
 }
 
 /**
- * The trail back up a service page, with the matching BreadcrumbList data so
- * search results show the same path. The last crumb is the current page and
- * is not a link.
+ * The trail back up a page, with the matching BreadcrumbList data so search
+ * results show the same path. The last crumb is the current page and is not a
+ * link.
+ *
+ * The item URLs are REGIONAL. They used to be built as `${site.url}${href}`,
+ * which put India's URLs into the breadcrumbs of a page whose own canonical
+ * said /ae or /us — a trail that contradicts the page it is on, and an
+ * invitation for Google to treat the regional URL as a duplicate of the Indian
+ * one. `regionUrl` is the same helper the canonical and the hreflang
+ * alternates are built from, so the three can no longer disagree.
+ *
+ * Async, so it can read the request's region. It renders inside PageHero,
+ * which is a server component; nothing client-side imports it.
  */
-export function Breadcrumbs({ trail, className }: { trail: readonly Crumb[]; className?: string }) {
-  const jsonLd = {
+export async function Breadcrumbs({ trail, className }: { trail: readonly Crumb[]; className?: string }) {
+  const { region } = await requestRegion();
+  const breadcrumbList = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: trail.map((c, i) => ({
       "@type": "ListItem",
       position: i + 1,
       name: c.label,
-      item: `${site.url}${c.href}`,
+      item: regionUrl(c.href, region),
     })),
   };
   const last = trail.length - 1;
@@ -30,7 +42,7 @@ export function Breadcrumbs({ trail, className }: { trail: readonly Crumb[]; cla
     <nav aria-label={labels.breadcrumb} className={cn("min-w-0", className)}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+        dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList) }}
       />
       <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 font-mono text-eyebrow text-muted uppercase">
         {trail.map((crumb, i) => (

@@ -3,6 +3,7 @@
 import { MessageCircle } from "lucide-react";
 import { ButtonLink } from "@/components/zan/ui/Button";
 import { hero } from "@/constants/zan";
+import { trackWhatsAppClick } from "@/lib/analytics";
 import { waLink } from "@/lib/links";
 import { useSiteHref } from "@/lib/useSiteHref";
 import { useRegion } from "@/lib/region";
@@ -29,6 +30,7 @@ export function HeroActions() {
 
       <ButtonLink
         href={waLink(region.whatsapp, region.brandName)}
+        onClick={() => trackWhatsAppClick("Hero WhatsApp Button")}
         target="_blank"
         rel="noopener noreferrer"
         variant="secondary"

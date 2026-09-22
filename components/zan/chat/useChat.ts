@@ -26,9 +26,12 @@ import type { ChatMessage, ConnectionState, ConversationState, KnownContact } fr
    data. On reconnect we ask for everything past the highest sequence we hold.
 
    Ported from the main app's src/lib/chat/useChat.ts. One change: pusher-js is
-   imported dynamically, and only when a key and cluster are configured. Most
-   of the time (and always in local development) they are not, so the realtime
-   library is never fetched at all and the panel runs over HTTP.
+   imported dynamically, and only when a key and cluster are configured. They
+   now are — NEXT_PUBLIC_PUSHER_KEY and _CLUSTER live in .env.local alongside
+   the rest of the chat backend — so realtime is the normal path. The guard
+   stays because a deployment without those two must still work: without them
+   pusher-js is never fetched and the panel runs over HTTP, reconciling after
+   every send and polling only while a human is on the thread.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 interface UseChatOptions {

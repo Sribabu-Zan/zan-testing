@@ -3,16 +3,15 @@ import type { ChatMessage, ConversationState, SessionResponse } from "./types";
 /* ───────────────────────────────────────────────────────────────────────────
    THE CHAT ENDPOINTS
 
-   They are not implemented here. They belong to the main Zan app, and in
-   development that app runs on a different port, so next.config.ts rewrites
-   /api/chat/* and /api/pusher/* to it on the server. Every call below is
-   therefore same-origin: no CORS, no preflight, no second host in the client,
-   and nothing to change the day this page is served by the main app itself.
+   Local. Every path below is a Route Handler in this project's app/api — the
+   endpoints were proxied to the main Zan app until this site grew its own
+   backend, and the rewrites that did that are gone from next.config.ts. Same
+   origin, no CORS, no second host, and no risk of the site proxying its own
+   API back into itself once it is serving zanservices.com.
 
-   No trailing slashes. The main app sets `trailingSlash: true` and its own
-   copy of this file ends every path in "/"; this app does not, so a slash
-   here would be 308-redirected BEFORE the rewrite ran and a redirected POST
-   can arrive with no body. The rewrite's destination adds it back.
+   No trailing slashes: this app does not set `trailingSlash`, so the routes
+   answer on the bare path. Adding a slash would earn a 308, and a redirected
+   POST can arrive with no body.
    ─────────────────────────────────────────────────────────────────────────── */
 
 const BASE = "/api";

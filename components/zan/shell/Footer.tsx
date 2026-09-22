@@ -5,7 +5,6 @@ import { motion, useMotionValue, useTransform } from "framer-motion";
 import { ArrowUp, Mail, Phone } from "lucide-react";
 import {
   contactIntro,
-  credits,
   ctas,
   footerColumns,
   legalLinks,
@@ -33,9 +32,9 @@ const [CTA_LINE, ...CTA_REST] = contactIntro.lead.split(/(?<=\.)\s+/);
 
 /**
  * The page's close: a CTA strip, the brand column with socials, the link
- * columns (pages of the main site), all three offices, the legal bar with
- * the model credit, and a giant ghosted "ZAN SERVICES" that rises as the
- * page ends.
+ * columns (pages of the main site), all three offices, the legal bar, and a
+ * giant ghosted "ZAN SERVICES" that rises as the page ends. Third-party
+ * credits live on /disclaimer, not here.
  */
 export function Footer() {
   const region = useRegion();
@@ -128,7 +127,13 @@ export function Footer() {
           </ul>
         </div>
 
-        <nav aria-label="Footer" className="grid grid-cols-2 gap-8 lg:col-span-8 lg:grid-cols-[1.25fr_1fr_1.2fr]">
+        {/* Four columns on the widest screens: Services, Company, Marketing and
+            the contact details. Marketing is the only sitewide link into the
+            four marketing discipline pages. */}
+        <nav
+          aria-label="Footer"
+          className="grid grid-cols-2 gap-x-8 gap-y-10 lg:col-span-8 lg:grid-cols-[1.1fr_0.9fr_1.25fr_1.05fr] lg:gap-y-8"
+        >
           {footerColumns.map((col) => (
             <div key={col.title}>
               <h2 className="font-mono text-eyebrow text-muted uppercase">{col.title}</h2>
@@ -147,7 +152,7 @@ export function Footer() {
               </ul>
             </div>
           ))}
-          <div className="col-span-2 lg:col-span-1">
+          <div className="col-span-2 sm:col-span-1">
             <h2 className="font-mono text-eyebrow text-muted uppercase">Contact</h2>
             <ul className="mt-4 md:mt-5 md:space-y-3">
               <li>
@@ -247,27 +252,6 @@ export function Footer() {
             ))}
           </ul>
           <div className="flex flex-col gap-2 lg:items-end lg:text-right">
-            {credits.map((c) => (
-              <p key={c.href} className="max-w-md">
-                <a
-                  href={c.href}
-                  target="_blank"
-                  rel="noopener"
-                  className="underline decoration-line-strong underline-offset-2 transition-colors duration-300 hover:text-ink"
-                >
-                  {c.work}
-                </a>{" "}
-                by {c.author},{" "}
-                <a
-                  href={c.licenseHref}
-                  target="_blank"
-                  rel="noopener"
-                  className="whitespace-nowrap underline decoration-line-strong underline-offset-2 transition-colors duration-300 hover:text-ink"
-                >
-                  {c.license}
-                </a>
-              </p>
-            ))}
             <SiteLink
               href="#main"
               className="inline-flex min-h-11 items-center gap-1.5 font-medium text-ink-2 md:min-h-0 transition-colors duration-300 hover:text-ink"

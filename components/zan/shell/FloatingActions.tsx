@@ -14,6 +14,7 @@ import { MessageSquare, PenLine, X } from "lucide-react";
 import { ctas } from "@/constants/zan";
 import { AssistantMark } from "@/components/zan/chat/AssistantMark";
 import { ChatPanelLazy } from "@/components/zan/chat/ChatPanelLazy";
+import { trackPopupView, trackWhatsAppClick } from "@/lib/analytics";
 import { waLink } from "@/lib/links";
 import { useSiteHref } from "@/lib/useSiteHref";
 import { useRegion } from "@/lib/region";
@@ -115,6 +116,9 @@ export function FloatingActions() {
     returnFocus.current = true;
     setChatMounted(true);
     setChatOpen(true);
+    // The site's only overlay, and the nearest thing it has to the live
+    // site's popup. Named so the two can be told apart in the reports.
+    trackPopupView("assistant_panel");
   };
 
   const closeChat = useCallback(() => setChatOpen(false), []);
@@ -266,7 +270,10 @@ export function FloatingActions() {
                     href={waLink(region.whatsapp, region.brandName)}
                     target="_blank"
                     rel="noopener"
-                    onClick={close}
+                    onClick={() => {
+                      trackWhatsAppClick("Floating WhatsApp Button");
+                      close();
+                    }}
                     data-contact="whatsapp"
                     aria-label="WhatsApp (opens in a new tab)"
                     className="group/row block rounded-full"

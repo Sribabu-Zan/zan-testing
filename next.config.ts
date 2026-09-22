@@ -1,22 +1,6 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 
-/* ── Where the main Zan app lives ───────────────────────────────────────────
-   Only the chat API still comes from there. Navigation does not: every page
-   of this site is a route under app/, and lib/links.ts resolves content hrefs
-   to this origin. This constant exists for the two rewrites at the bottom of
-   the file; set NEXT_PUBLIC_MAIN_SITE_URL to "" once the chat endpoints are
-   local and both proxies drop out on their own.
-
-   In development this site runs on :5173, so the main app cannot be there too:
-   the default is :3000 (start it with `npm run dev -- -p 3000`). Pointing this
-   at :5173 would proxy the chat API back into this site and every chat call
-   would 404. */
-const MAIN_SITE_URL = (
-  process.env.NEXT_PUBLIC_MAIN_SITE_URL ??
-  (process.env.NODE_ENV === "production" ? "https://zanservices.com" : "http://localhost:3000")
-).replace(/\/+$/, "");
-
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -41,25 +25,68 @@ const nextConfig: NextConfig = {
     // old dark theme — long after the file had been rewritten. Pin it here.
     root: path.join(__dirname),
   },
-  /* ── The chat API, borrowed from the main app ────────────────────────────
-     The assistant's endpoints — /api/chat/session, /message, /history, /lead,
-     /handoff and /api/pusher/auth — are implemented once, in the main Zan app.
-     This page proxies them on the SERVER instead of duplicating a backend or
-     calling a second origin from the browser: the fetches stay same-origin, so
-     there is no CORS preflight and no third-party-cookie question, and the day
-     this page becomes the main app's homepage the routes are already local and
-     these rules simply stop matching.
+  /* The chat API used to be proxied to the main app by two rewrites here.
+     It is no longer borrowed: /api/chat/*, /api/pusher/auth, /api/agent/* and
+     the WhatsApp webhook are all implemented in app/api of this project, over
+     its own Mongo, Gemini, Pusher and Meta credentials. The rewrites had to go
+     rather than simply stop matching — this site becomes zanservices.com, and
+     a rule pointing at that host would have proxied the API back into itself.
 
-     The destination carries the trailing slash because the main app sets
-     `trailingSlash: true`. This app does not, so the client calls the paths
-     WITHOUT one — a trailing slash here would be 308-redirected before the
-     rewrite ever ran, and a redirected POST can arrive with no body. */
-  async rewrites() {
-    if (!MAIN_SITE_URL) return [];
-    return [
-      { source: "/api/chat/:path*", destination: `${MAIN_SITE_URL}/api/chat/:path*/` },
-      { source: "/api/pusher/:path*", destination: `${MAIN_SITE_URL}/api/pusher/:path*/` },
+     Keeping them local also fixes the rate limiter. A server-side rewrite
+     presents every visitor to the upstream as one IP, so a per-IP limit
+     ("20 chat sessions per 5 minutes") applied to the whole site at once.
+     Requests now arrive directly and x-forwarded-for is the real caller. */
+
+  /* ── URLs the old site has indexed that this one does not have ──────────
+     Eleven live, indexed addresses from zanservices.com have no route here.
+     Left alone they hard-404, which throws away whatever authority each one
+     has accumulated; a 308 passes it to the page that replaced it.
+
+     Every rule is emitted three times, once per region prefix, because the
+     region is a path segment on this site: /ae/thank-you has to land on
+     /ae/contact-us, not on India's.
+
+     These run BEFORE proxy.ts, so a redirect lands on the prefixed URL and the
+     proxy then resolves the region from it exactly as it would for a typed
+     address. Nothing here touches the two API rewrites above. */
+  async redirects() {
+    /* [from, to] — both region-free, both leading-slashed. */
+    const moved: [string, string][] = [
+      /* The main app already carries these six (src/next.config.ts): the
+         product-design page was split into the branding practice, and the
+         three landing pages were folded into the service pages they duplicated. */
+      ["/services/product-design", "/services/branding-and-designing/ui-ux-design"],
+      ["/landing-pages/web-development", "/services/web-development"],
+      ["/landing-pages/app-development", "/services/mobile-apps"],
+      ["/landing-pages/digital-marketing", "/services/digital-marketing"],
+
+      /* The three branding packages were four URLs selling one thing. They are
+         now three decks on one page, because a client searches for "logo
+         design", not for "Growth Branding Package". */
+      ["/services/branding-and-designing/starter-branding-package", "/services/branding-and-designing#packages"],
+      ["/services/branding-and-designing/growth-branding-package", "/services/branding-and-designing#packages"],
+      ["/services/branding-and-designing/premium-brand-identity", "/services/branding-and-designing#packages"],
+
+      /* The old enquiry form's confirmation page. It has no content of its
+         own, and the form on /contact-us now confirms in place. */
+      ["/thank-you", "/contact-us"],
+
+      /* Ghost URLs Google crawled on the old site, fixed there in netlify's
+         _redirects and re-stated here. /Home is listed separately from /home
+         because path matching is case-sensitive. */
+      ["/contact", "/contact-us"],
+      ["/home", "/"],
+      ["/Home", "/"],
     ];
+
+    return moved.flatMap(([from, to]) =>
+      ["", "/ae", "/us"].map((prefix) => ({
+        source: `${prefix}${from}`,
+        // The homepage is "" under a prefix: /ae/home -> /ae, not /ae/.
+        destination: prefix && to === "/" ? prefix : `${prefix}${to}`,
+        permanent: true,
+      })),
+    );
   },
 
   async headers() {

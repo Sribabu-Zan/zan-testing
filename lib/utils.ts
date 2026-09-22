@@ -46,3 +46,14 @@ export function splitTextToWords(text: string): string[] {
 export function splitTextToChars(text: string): string[] {
   return text.split("");
 }
+
+/**
+ * A price for a table cell. The price tables carry the "From " prefix so a
+ * badge can read "From ₹9,999", but a column of figures already says "from"
+ * in its heading, so the prefix only makes the column ragged. Mirrors
+ * stripFrom() in the main app.
+ */
+export function stripFrom(price: string | null | undefined): string {
+  if (!price) return "Custom quote";
+  return price.replace(/^From\s+/i, "");
+}

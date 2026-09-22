@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { FaqAccordion } from "@/components/zan/contact/FaqAccordion";
 import { PageHero } from "@/components/zan/page/PageHero";
 import { PackageDeck } from "@/components/zan/page/PackageDeck";
 import { StartingPrice } from "@/components/zan/page/Price";
@@ -14,6 +15,7 @@ import {
   brandingPackages,
   childrenOf,
   findServicePage,
+  homeCrumb,
   labels,
   practiceOf,
   serviceTechDomains,
@@ -21,8 +23,10 @@ import {
   type ServicePage,
 } from "@/constants/pages";
 import { servicePackages } from "@/constants/pricing";
-import { ctas, processSteps, projects, techDomains } from "@/constants/zan";
+import { ctas, faqIntro, faqsForService, processSteps, projects, techDomains } from "@/constants/zan";
 import { pageMetadata } from "@/lib/metadata";
+import { faqSchema, jsonLd, serviceSchema } from "@/lib/schema";
+import { requestRegion } from "@/lib/server-region";
 
 type RouteParams = { params: Promise<{ slug?: string[] }> };
 
@@ -35,13 +39,21 @@ export async function generateMetadata({ params }: RouteParams): Promise<Metadat
   const { slug = [] } = await params;
   const page = findServicePage(slug);
   if (!page) return {};
-  return pageMetadata({ title: page.seoTitle, description: page.seoDescription });
+  /* Every service title is written as a local pitch — "Web Development Company
+     in Kolkata". On /ae and /us that names the wrong market, so lib/metadata.ts
+     swaps the place out. See its `localPlace` note. */
+  return pageMetadata({
+    title: page.seoTitle,
+    description: page.seoDescription,
+    localPlace: true,
+  });
 }
 
-/** Services / [practice] / this page. */
+/** Home / Services / [practice] / this page. */
 function trailFor(page: ServicePage) {
   const parent = page.parent ? findServicePage([page.parent]) : undefined;
   return [
+    homeCrumb,
     { label: "Services", href: "/services" },
     ...(parent ? [{ label: parent.title, href: parent.href }] : []),
     { label: page.title, href: page.href },
@@ -53,6 +65,7 @@ export default async function ServiceDetailPage({ params }: RouteParams) {
   const page = findServicePage(slug);
   if (!page) notFound();
 
+  const { region } = await requestRegion();
   const children = childrenOf(page.slug);
   const packages = servicePackages[page.priceKey];
   const isBranding = page.slug === "branding-and-designing";
@@ -60,6 +73,15 @@ export default async function ServiceDetailPage({ params }: RouteParams) {
     .map((id) => techDomains.find((d) => d.id === id))
     .filter((d) => d !== undefined);
   const relatedWork = projects.filter((p) => p.category === page.priceKey);
+  /* Three of the sixteen pages have a question set of their own. The rest show
+     no section rather than a borrowed one. */
+  const faqs = faqsForService[page.priceKey] ?? [];
+
+  /* The closing bands alternate ground, so each one has to know what the band
+     above it landed on. */
+  const processTone = domains.length > 0 || children.length > 0 ? "bg" : "surface";
+  const faqTone = processTone === "bg" ? "surface" : "bg";
+  const otherTone = faqs.length === 0 ? "surface" : faqTone === "bg" ? "surface" : "bg";
   const siblings = (practiceOf(page)?.items ?? [])
     .filter((item) => item.href !== page.href)
     .slice(0, 3);
@@ -88,6 +110,17 @@ export default async function ServiceDetailPage({ params }: RouteParams) {
 
   return (
     <main id="main">
+      {/* What this page sells, with its capabilities as an OfferCatalog and a
+          pointer back to the Organization node the layout attaches. Without it
+          these sixteen pages carried a BreadcrumbList and nothing else.
+
+          The FAQPage rides along on the three pages that render a question set
+          of their own; `faqSchema` returns null for the other thirteen and
+          `jsonLd` drops it. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(serviceSchema(page, region), faqSchema(faqs)) }}
+      />
       <PageHero
         eyebrow={page.tagline}
         title={[page.title]}
@@ -96,7 +129,10 @@ export default async function ServiceDetailPage({ params }: RouteParams) {
         aside={aside}
       >
         <div className="mt-9 flex flex-wrap items-center gap-3">
-          <SiteButtonLink href={ctas.consultation.href} size="lg">
+          {/* `from` carries this page over to the enquiry form, which lives on
+              /contact-us rather than here and would otherwise ask the visitor
+              to name the service they have just spent a page reading about. */}
+          <SiteButtonLink href={`${ctas.consultation.href}?from=${page.href}`} size="lg">
             {ctas.consultation.label}
           </SiteButtonLink>
           {packages || isBranding ? (
@@ -217,7 +253,7 @@ export default async function ServiceDetailPage({ params }: RouteParams) {
 
       <Section
         id="process"
-        tone={domains.length > 0 || children.length > 0 ? "bg" : "surface"}
+        tone={processTone}
         eyebrow={labels.process}
         title="Four steps, start to launch"
         aside={
@@ -241,8 +277,22 @@ export default async function ServiceDetailPage({ params }: RouteParams) {
         </ol>
       </Section>
 
+      {faqs.length > 0 && (
+        <Section
+          id="faq"
+          tone={faqTone}
+          eyebrow={faqIntro.eyebrow}
+          title={`${page.title} questions`}
+          lead="Common questions about this work, answered in full."
+        >
+          <div className="lg:mx-auto lg:max-w-4xl">
+            <FaqAccordion items={faqs} />
+          </div>
+        </Section>
+      )}
+
       {siblings.length > 0 && (
-        <Section id="other-services" tone="surface" eyebrow={labels.otherServices} title="Also in this practice">
+        <Section id="other-services" tone={otherTone} eyebrow={labels.otherServices} title="Also in this practice">
           <ul className="grid gap-5 md:grid-cols-3">
             {siblings.map((item, i) => (
               <li key={item.id} className="min-w-0">

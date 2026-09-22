@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ArrowUpRight, Check } from "lucide-react";
+import { FaqAccordion } from "@/components/zan/contact/FaqAccordion";
 import { PageHero } from "@/components/zan/page/PageHero";
 import { StartingPriceValue } from "@/components/zan/page/Price";
 import { Reveal } from "@/components/zan/page/Reveal";
@@ -7,18 +8,27 @@ import { Section } from "@/components/zan/page/Section";
 import { FactList } from "@/components/zan/page/cards";
 import { HeroFacts, HeroPanel } from "@/components/zan/page/HeroPanel";
 import { SiteButtonLink, SiteLink } from "@/components/zan/services/SiteLinks";
-import { areaPages, brandingPackages, childrenOf, labels, pricingPage, subPages } from "@/constants/pages";
-import { about, ctas, processSteps } from "@/constants/zan";
+import { areaPages, brandingPackages, childrenOf, labels, pageTrail, pricingPage, subPages } from "@/constants/pages";
+import { about, ctas, faqIntro, faqs, processSteps, regionOrder, regions } from "@/constants/zan";
 import { pageMetadata } from "@/lib/metadata";
+import { requestRegion } from "@/lib/server-region";
 
-export const metadata: Metadata = pageMetadata({
-  title: pricingPage.seoTitle,
-  description: pricingPage.seoDescription,
-});
+export function generateMetadata(): Promise<Metadata> {
+  // "Pricing in India" becomes "Pricing in the UAE" / "in the US"; the table
+  // below is already priced in the region's own currency.
+  return pageMetadata({
+    title: pricingPage.seoTitle,
+    description: pricingPage.seoDescription,
+    localPlace: true,
+  });
+}
 
 const marketing = areaPages.find((p) => p.slug === "digital-marketing")!;
 const designing = areaPages.find((p) => p.slug === "branding-and-designing")!;
 
+/* Each practice leads with its own parent page and then its disciplines. The
+   two parents are pages a client can buy outright, so leaving them out of the
+   table hid the only figure some visitors came for. */
 const groups = [
   {
     key: "development",
@@ -30,34 +40,39 @@ const groups = [
     key: "marketing",
     title: marketing.title,
     note: "Retained monthly. The figure is the entry package on each page.",
-    rows: childrenOf(marketing.slug),
+    rows: [marketing, ...childrenOf(marketing.slug)],
   },
   {
     key: "designing",
     title: designing.title,
     note: "Bought as a discipline, or as one of the three branding decks below.",
-    rows: subPages.filter((p) => p.parent === designing.slug),
+    rows: [designing, ...subPages.filter((p) => p.parent === designing.slug)],
   },
 ];
 
 /** What is in every engagement, from the launch step of the process. */
 const included = processSteps[3].deliverables;
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const { region } = await requestRegion();
+  const active = regions[region];
+
   return (
     <main id="main">
       <PageHero
         eyebrow={pricingPage.eyebrow}
         title={pricingPage.title}
         lead={pricingPage.lead}
+        trail={pageTrail("Pricing", "/pricing")}
         aside={
           <HeroPanel title="Priced per region">
             <HeroFacts
               items={[
-                { label: "India", value: "Indian rupees" },
-                { label: "United Arab Emirates", value: "Dirhams" },
-                { label: "United States", value: "US dollars" },
-                { label: "Elsewhere", value: "Quoted in USD" },
+                ...regionOrder.map((id) => ({
+                  label: regions[id].office.country,
+                  value: `${regions[id].currencyName} (${regions[id].currency})`,
+                })),
+                { label: "Elsewhere", value: `Quoted in ${regions.us.currency}` },
               ]}
             />
             <p className="mt-6 border-t border-line pt-5 text-small text-muted">
@@ -80,7 +95,7 @@ export default function PricingPage() {
         id="prices"
         eyebrow="Starting prices"
         title="Every page, and what it starts at"
-        lead="Figures follow the region set in the navbar: India in rupees, the UAE in dirhams, the United States in dollars. Open a page for its full deck."
+        lead={`Every figure below is in ${active.currencyName} (${active.currency}), the currency of the region set in the navbar. Open a page for its full deck.`}
       >
         <div className="space-y-12">
           {groups.map((group) => (
@@ -151,6 +166,14 @@ export default function PricingPage() {
             </Reveal>
           </div>
         </div>
+
+        <Reveal delay={0.1}>
+          <p className="mt-14 max-w-[70ch] text-small text-muted">
+            Prices exclude applicable taxes. Every figure is a starting point for the scope
+            described. The final quote follows a call, and larger or more complex builds are
+            priced against that scope rather than off this page.
+          </p>
+        </Reveal>
       </Section>
 
       <Section
@@ -169,6 +192,18 @@ export default function PricingPage() {
           ))}
         </ul>
         <FactList items={about.principles} className="mt-5 lg:grid-cols-4" />
+      </Section>
+
+      {/* Budget and engagement, from the same set the home page carries. */}
+      <Section
+        id="faq"
+        eyebrow={faqIntro.eyebrow}
+        title="Budget and engagement"
+        lead="What the work costs, how it is scoped, and what happens between the first call and the invoice."
+      >
+        <div className="lg:mx-auto lg:max-w-4xl">
+          <FaqAccordion items={faqs.slice(3, 8)} />
+        </div>
       </Section>
     </main>
   );

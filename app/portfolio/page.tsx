@@ -7,14 +7,16 @@ import { Section } from "@/components/zan/page/Section";
 import { MetricRow } from "@/components/zan/page/cards";
 import { HeroFacts, HeroPanel } from "@/components/zan/page/HeroPanel";
 import { SiteButtonLink } from "@/components/zan/services/SiteLinks";
-import { labels, portfolioPage } from "@/constants/pages";
+import { labels, pageTrail, portfolioPage } from "@/constants/pages";
 import { clients, ctas, metrics, metricsIntro, partnersIntro, projects } from "@/constants/zan";
 import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = pageMetadata({
-  title: portfolioPage.seoTitle,
-  description: portfolioPage.seoDescription,
-});
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: portfolioPage.seoTitle,
+    description: portfolioPage.seoDescription,
+  });
+}
 
 export default function PortfolioPage() {
   return (
@@ -23,6 +25,7 @@ export default function PortfolioPage() {
         eyebrow={portfolioPage.eyebrow}
         title={portfolioPage.title}
         lead={portfolioPage.lead}
+        trail={pageTrail("Portfolio", "/portfolio")}
         aside={
           <HeroPanel title={metricsIntro.eyebrow}>
             <HeroFacts items={metrics.map((m) => ({ label: m.label, value: m.value }))} />
