@@ -123,7 +123,7 @@ export interface RegionConfig {
   currencyName: string;
 }
 
-const zanMark = { src: "/images/brand/zan-mark.png", width: 828, height: 301 };
+const zanMark = { src: "/images/brand/zan-mark.webp", width: 640, height: 233 };
 
 export const regions: Record<RegionId, RegionConfig> = {
   in: {
@@ -145,7 +145,7 @@ export const regions: Record<RegionId, RegionConfig> = {
     short: "AE",
     brandName: "Zan Verse Technology",
     // Same aspect as the mark (2.75:1), so swapping it never shifts the nav.
-    logo: { src: "/images/brand/zan-logo-ae.png", width: 1980, height: 720 },
+    logo: { src: "/images/brand/zan-logo-ae.webp", width: 640, height: 233 },
     office: offices[1],
     whatsapp: "971559855875",
     heroOwner: "Kolkata's",
@@ -852,10 +852,16 @@ export const partnersIntro = {
 } as const;
 
 export const clients: readonly Client[] = [
-  { name: "Linen & Stories", sector: "Home textiles and lifestyle retail", src: "/images/clients/client-1.png" },
-  { name: "Angel Care", sector: "Healthcare and elder care", src: "/images/clients/client-2.png" },
-  { name: "VSK", sector: "Construction and infrastructure", src: "/images/clients/client-3.png" },
-  { name: "Legacy Events", sector: "Event management", src: "/images/clients/client-4.png" },
+  { name: "Linen & Stories", sector: "Home textiles and lifestyle retail", src: "/images/clients/client-1.webp" },
+  { name: "Angel Care", sector: "Healthcare and elder care", src: "/images/clients/client-2.webp" },
+  { name: "VSK", sector: "Construction and infrastructure", src: "/images/clients/client-3.webp" },
+  { name: "Legacy Events", sector: "Event management", src: "/images/clients/client-4.webp" },
+  { name: "Patient Care Unit", sector: "Healthcare and patient services", src: "/images/clients/client-5.webp" },
+  { name: "Rebel", sector: "Women's fashion retail", src: "/images/clients/client-6.webp" },
+  { name: "Mylta", sector: "Business and MSME finance", src: "/images/clients/client-7.webp" },
+  { name: "Aditya Kumar Upadhyay", sector: "Lifestyle and personality coaching", src: "/images/clients/client-8.webp" },
+  { name: "Shreya High Rise", sector: "Real estate and high-rise development", src: "/images/clients/client-9.webp" },
+  { name: "Ifra Garments", sector: "Tailored apparel and garments", src: "/images/clients/client-10.webp" },
 ];
 
 /* ── Technology ───────────────────────────────────────────────────────────── */
@@ -878,36 +884,38 @@ export const techIntro = {
 
 /** Real vendor logos, by tool name. Anything without a file gets a wordmark chip. */
 export const techLogos: Record<string, string> = {
-  React: "/images/tech/react.png",
-  "Next.js": "/images/tech/next.png",
-  TypeScript: "/images/tech/ts.png",
-  "Tailwind CSS": "/images/tech/tailwind.png",
-  "Vue.js": "/images/tech/vue.png",
-  "Node.js": "/images/tech/node.png",
-  Python: "/images/tech/python.png",
-  Django: "/images/tech/django.png",
-  Flask: "/images/tech/flask.png",
-  FastAPI: "/images/tech/fastApi.png",
-  GraphQL: "/images/tech/graphQL.png",
-  "REST APIs": "/images/tech/rest.png",
-  "React Native": "/images/tech/react_native.png",
-  Flutter: "/images/tech/flutter.png",
-  Swift: "/images/tech/swift.png",
-  Kotlin: "/images/tech/android.png",
-  Firebase: "/images/tech/firebase.png",
-  AWS: "/images/tech/aws.png",
+  React: "/images/tech/react.webp",
+  "Next.js": "/images/tech/next.webp",
+  TypeScript: "/images/tech/ts.webp",
+  "Tailwind CSS": "/images/tech/tailwind.webp",
+  "Vue.js": "/images/tech/vue.webp",
+  "Node.js": "/images/tech/node.webp",
+  Python: "/images/tech/python.webp",
+  Django: "/images/tech/django.webp",
+  Flask: "/images/tech/flask.webp",
+  FastAPI: "/images/tech/fastApi.webp",
+  GraphQL: "/images/tech/graphQL.webp",
+  "REST APIs": "/images/tech/rest.webp",
+  "React Native": "/images/tech/react_native.webp",
+  Flutter: "/images/tech/flutter.webp",
+  Swift: "/images/tech/swift.webp",
+  Kotlin: "/images/tech/android.webp",
+  Firebase: "/images/tech/firebase.webp",
+  AWS: "/images/tech/aws.webp",
+  // The one PNG left in this list: it is already an optimally packed flat
+  // mark, and every WebP encoding of it came out larger.
   "Google Cloud": "/images/tech/google_cloud.png",
-  Azure: "/images/tech/microsoft_azure.png",
-  Vercel: "/images/tech/vercel.png",
-  Netlify: "/images/tech/netlify.png",
-  Docker: "/images/tech/docker.png",
-  Kubernetes: "/images/tech/kubernates.png",
-  Solidity: "/images/tech/solidity.png",
-  Hardhat: "/images/tech/hardhat.png",
-  Ethereum: "/images/tech/ether.png",
-  Polygon: "/images/tech/polygon.png",
-  Figma: "/images/tech/figma.png",
-  "Adobe XD": "/images/tech/adobe_xd.png",
+  Azure: "/images/tech/microsoft_azure.webp",
+  Vercel: "/images/tech/vercel.webp",
+  Netlify: "/images/tech/netlify.webp",
+  Docker: "/images/tech/docker.webp",
+  Kubernetes: "/images/tech/kubernates.webp",
+  Solidity: "/images/tech/solidity.webp",
+  Hardhat: "/images/tech/hardhat.webp",
+  Ethereum: "/images/tech/ether.webp",
+  Polygon: "/images/tech/polygon.webp",
+  Figma: "/images/tech/figma.webp",
+  "Adobe XD": "/images/tech/adobe_xd.webp",
 };
 
 export const techDomains: readonly TechDomain[] = [
@@ -1106,9 +1114,9 @@ export const credentials: readonly Credential[] = [
     refLabel: "Registration no.",
     ref: "UDYAM-WB-10-0193560",
     logo: {
-      src: "/images/brand/msme_udyam.png",
-      width: 900,
-      height: 495,
+      src: "/images/brand/msme_udyam.webp",
+      width: 256,
+      height: 141,
       alt: "Udyam MSME registered, Government of India",
     },
   },
@@ -1119,9 +1127,9 @@ export const credentials: readonly Credential[] = [
     refLabel: "Cert. no.",
     ref: "KDACQ202602020",
     logo: {
-      src: "/images/brand/iso_cef.png",
-      width: 500,
-      height: 500,
+      src: "/images/brand/iso_cef.webp",
+      width: 256,
+      height: 256,
       alt: "ISO 9001:2015 certified",
     },
   },
@@ -1132,9 +1140,9 @@ export const credentials: readonly Credential[] = [
     refLabel: "Cert. no.",
     ref: "KDACI202602004",
     logo: {
-      src: "/images/brand/iso_cef.png",
-      width: 500,
-      height: 500,
+      src: "/images/brand/iso_cef.webp",
+      width: 256,
+      height: 256,
       alt: "ISO/IEC 27001:2022 certified",
     },
   },

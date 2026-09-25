@@ -126,7 +126,7 @@ export function RoamingUfo() {
         <div data-reveal data-in="fade" className="zan-hero-in" style={{ ["--zan-d" as string]: 5 }}>
           <div className="zan-hero-bob">
             <Image
-              src="/images/hero/ufo.png"
+              src="/images/hero/ufo.webp"
               alt=""
               width={612}
               height={408}

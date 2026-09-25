@@ -76,7 +76,7 @@ export function organizationSchema() {
     name: site.name,
     alternateName: [site.usEntity, localiseBrand(site.name, "ae")],
     url: site.url,
-    logo: `${site.url}/images/brand/zan-logo.png`,
+    logo: `${site.url}/images/brand/zan-logo.webp`,
     image: `${site.url}${OG_IMAGE}`,
     description: site.description,
     email: site.email,

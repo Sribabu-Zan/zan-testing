@@ -77,7 +77,7 @@ export function UaeFlyer() {
       <div data-flyer-row className="zan-hero-flyer-row absolute top-0 left-0 flex items-center">
         <div data-flyer-flag className="relative z-10 w-28 shrink-0 sm:w-44 lg:w-60">
           <Image
-            src="/images/uae/uae_flag_flyer.png"
+            src="/images/uae/uae_flag_flyer.webp"
             alt=""
             width={685}
             height={175}
@@ -111,10 +111,10 @@ export function UaeFlyer() {
         </svg>
         <div className="relative z-10 w-36 shrink-0 sm:w-56 lg:w-72">
           <Image
-            src="/images/uae/airliner_emirates.png"
+            src="/images/uae/airliner_emirates.webp"
             alt=""
-            width={3500}
-            height={1104}
+            width={1024}
+            height={323}
             sizes="(min-width: 1024px) 18rem, (min-width: 640px) 14rem, 9rem"
             className="h-auto w-full select-none"
             draggable={false}

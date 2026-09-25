@@ -191,7 +191,7 @@ export function HeroScene({ children }: { children: ReactNode }) {
           <div data-reveal data-in="astro" className="zan-hero-in" style={{ "--zan-d": 2 } as CSSProperties}>
             <div className="zan-hero-float">
               <Image
-                src="/images/hero/astronaut.png"
+                src="/images/hero/astronaut.webp"
                 alt=""
                 width={500}
                 height={500}
