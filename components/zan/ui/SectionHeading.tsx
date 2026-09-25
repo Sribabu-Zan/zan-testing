@@ -18,6 +18,28 @@ const line: Variants = {
 };
 
 /**
+ * A display heading is sized against the column it sits in, not against the
+ * window.
+ *
+ * The scale reaches its 5.25rem ceiling at about a 1040px viewport, but a hero
+ * heading only has seven of the band's twelve columns — 529px at 1024, against
+ * 691px from 1320px up. So between those two widths the heading was set at 83px
+ * inside a box that could hold about 65px, and a title that is one long word
+ * with nowhere to wrap ran straight out under the panel beside it:
+ * CYBERSECURITY overhung by 113px, PERFORMANCE MARKETING by 64px, WEB
+ * DEVELOPMENT, MOBILE APP DEVELOPMENT and SOCIAL MEDIA MANAGEMENT by about 50px
+ * each, measured on the pages themselves.
+ *
+ * `cqi` is one percent of the wrapper's own inline size, so this caps the type
+ * at whatever the column can actually hold. 12.2 is set by the longest word in
+ * the catalogue: CYBERSECURITY is 7.75em wide in the display face, and 100/7.75
+ * is 12.9, taken down to 12.2 for margin. At a full-width container it works out
+ * above the ceiling, so `min` leaves the scale untouched from 1320px up and
+ * everywhere the heading is not in a column.
+ */
+const DISPLAY_FIT = "min(var(--text-display), 12.2cqi)";
+
+/**
  * Eyebrow + display heading + lead, with each heading line rising out of its
  * own mask as it enters. The heading's accessible name is the full sentence
  * (aria-label), so screen readers do not hear it line by line.
@@ -58,9 +80,18 @@ export function SectionHeading({
   leadClassName?: string;
 }) {
   const centred = align === "center";
+  const display = size === "display";
   const Heading = HEADINGS[as];
   return (
-    <div className={cn(centred && "mx-auto flex flex-col items-center text-center", className)}>
+    <div
+      className={cn(
+        /* The query container DISPLAY_FIT measures against. Only on the
+           display size, so nothing else on the site takes containment. */
+        display && "[container-type:inline-size]",
+        centred && "mx-auto flex flex-col items-center text-center",
+        className,
+      )}
+    >
       {eyebrow && (
         <motion.div
           data-reveal
@@ -79,9 +110,12 @@ export function SectionHeading({
         initial="hidden"
         whileInView="visible"
         viewport={VIEWPORT}
+        /* Inline, so it overrides only the font-size the text-display utility
+           sets and leaves its line height, tracking and weight alone. */
+        style={display ? { fontSize: DISPLAY_FIT } : undefined}
         className={cn(
           "font-display text-balance",
-          size === "display" ? "text-display" : size === "h1" ? "text-h1" : "text-h2",
+          display ? "text-display" : size === "h1" ? "text-h1" : "text-h2",
           eyebrow && "mt-5",
         )}
       >

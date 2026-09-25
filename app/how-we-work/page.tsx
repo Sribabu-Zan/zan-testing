@@ -6,6 +6,7 @@ import { FactCard, StepCard } from "@/components/zan/page/cards";
 import { HeroFacts, HeroPanel } from "@/components/zan/page/HeroPanel";
 import { SiteButtonLink } from "@/components/zan/services/SiteLinks";
 import { howWeWorkPage, labels, pageTrail } from "@/constants/pages";
+import { getReasonArt } from "@/constants/serviceArt";
 import { about, ctas, processSteps, techDomains, techIntro, whyUs } from "@/constants/zan";
 import { pageMetadata } from "@/lib/metadata";
 import { howToSchema, jsonLd } from "@/lib/schema";
@@ -80,6 +81,7 @@ export default async function HowWeWorkPage() {
                 tagline={item.tagline}
                 description={item.description}
                 icon={item.icon}
+                art={getReasonArt(item.id)}
                 delay={Math.min(i, 3) * 0.05}
               />
             </li>

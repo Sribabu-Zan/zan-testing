@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 100" width="160" height="100" fill="none" stroke="#121016" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+<rect x="8" y="16" width="96" height="70" rx="5" fill="#ffffff"/>
+<rect x="8" y="16" width="96" height="70" rx="5" stroke-width="2.8"/>
+<path d="M8 32h96" stroke-width="2.4"/>
+<rect x="18" y="40" width="52" height="22" rx="2" fill="#dcdae2" stroke="none"/>
+<rect x="18" y="68" width="22" height="10" rx="2" fill="#b8b5c4" stroke="none"/>
+<rect x="46" y="68" width="24" height="10" rx="2" fill="#dcdae2" stroke="none"/>
+<rect x="78" y="40" width="14" height="38" rx="2" fill="#dcdae2" stroke="none"/>
+<g fill="#ffffff" stroke-width="2.4">
+<rect x="4" y="12" width="8" height="8"/><rect x="100" y="12" width="8" height="8"/>
+<rect x="4" y="82" width="8" height="8"/><rect x="100" y="82" width="8" height="8"/>
+</g>
+<path d="M155 19L145 9L101 53L96 68L111 63z" fill="#ffffff"/>
+<path d="M155 19L145 9L101 53L96 68L111 63z" stroke-width="2.6"/>
+<path d="M101 53L111 63M145 29L135 19" stroke-width="2.4"/>
+<path d="M101 53L96 68L111 63z" fill="#121016" stroke="none"/>
+</svg>

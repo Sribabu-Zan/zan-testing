@@ -8,6 +8,7 @@ import { HeroFacts, HeroPanel } from "@/components/zan/page/HeroPanel";
 import { OfficeCards } from "@/components/zan/contact/OfficeCard";
 import { SiteButtonLink } from "@/components/zan/services/SiteLinks";
 import { aboutPage, labels, pageTrail } from "@/constants/pages";
+import { getIndustryArt } from "@/constants/serviceArt";
 import {
   about,
   credentials,
@@ -149,6 +150,7 @@ export default function AboutPage() {
                 title={industry.label}
                 description={industry.description}
                 icon={industry.icon}
+                art={getIndustryArt(industry.id)}
                 delay={Math.min(i, 3) * 0.05}
               />
             </li>

@@ -59,7 +59,7 @@ export default function Home() {
       <TechStack />
       <ChapterProcess />
       <Process />
-      <Industries />
+      {/* <Industries /> */}
       <About />
       <FAQ />
       <Contact />

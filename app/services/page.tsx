@@ -9,6 +9,7 @@ import { FactCard, ServiceCard, StepCard } from "@/components/zan/page/cards";
 import { HeroLinks, HeroPanel } from "@/components/zan/page/HeroPanel";
 import { SiteButtonLink, SiteLink } from "@/components/zan/services/SiteLinks";
 import { areaPages, childrenOf, pageTrail, servicesPage } from "@/constants/pages";
+import { getReasonArt } from "@/constants/serviceArt";
 import { ctas, faqIntro, processIntro, processSteps, servicesFaqs, whyUs } from "@/constants/zan";
 import { pageMetadata } from "@/lib/metadata";
 import { faqSchema, jsonLd } from "@/lib/schema";
@@ -130,6 +131,7 @@ export default function ServicesPage() {
                 tagline={item.tagline}
                 description={item.description}
                 icon={item.icon}
+                art={getReasonArt(item.id)}
                 delay={Math.min(i, 3) * 0.05}
               />
             </li>

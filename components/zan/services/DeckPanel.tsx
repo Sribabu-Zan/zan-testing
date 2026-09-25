@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { ctas, whyUs, type Practice } from "@/constants/zan";
-import { getServiceArt, SERVICE_PLATE } from "@/constants/serviceArt";
+import { getReasonPlate, getServicePlate, SERVICE_PLATE, type ServiceArt } from "@/constants/serviceArt";
 import { Eyebrow } from "@/components/zan/ui/Eyebrow";
 import { SiteButtonLink, SiteLink } from "@/components/zan/services/SiteLinks";
 
@@ -156,9 +156,8 @@ export function StackChips({ labelId, label, items }: { labelId: string; label: 
 const gridColumns = (count: number) =>
   ({ "--deck-cols-md": count > 4 ? 3 : 2, "--deck-cols-lg": count }) as CSSProperties;
 
-/** The drawing for a service, on a plate tinted with the region's accent. */
-function ServicePlate({ id }: { id: string }) {
-  const art = getServiceArt(id);
+/** A drawing, on a plate tinted with the region's accent. */
+function DeckPlate({ art }: { art?: ServiceArt }) {
   if (!art) return null;
   return (
     <span className="zan-deck-plate">
@@ -183,7 +182,7 @@ export function PracticeGrid({ practice, tone }: { practice: Practice; tone: Dec
     <ul className="zan-deck-grid" style={gridColumns(practice.items.length)}>
       {practice.items.map((item, i) => (
         <li key={item.id} className={`zan-deck-card relative border-t ${t.rule}`}>
-          <ServicePlate id={item.id} />
+          <DeckPlate art={getServicePlate(item.id)} />
           <div className="zan-deck-body">
             <h3 className="zan-deck-title text-h3 font-semibold">
               <SiteLink
@@ -233,6 +232,7 @@ export function WhyUsGrid({ tone }: { tone: DeckTone }) {
       <ul className="zan-deck-grid" style={gridColumns(whyUs.items.length)}>
         {whyUs.items.map((item) => (
           <li key={item.id} className={`zan-deck-card border-t ${t.rule}`}>
+            <DeckPlate art={getReasonPlate(item.id)} />
             <div className="zan-deck-body">
               <h3 className="zan-deck-title text-h3 font-semibold">{item.title}</h3>
               <p className="zan-deck-meta text-small">

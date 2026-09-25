@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FaqAccordion } from "@/components/zan/contact/FaqAccordion";
-import { PageHero } from "@/components/zan/page/PageHero";
+import { PageHero, PageHeroPhoto } from "@/components/zan/page/PageHero";
 import { PackageDeck } from "@/components/zan/page/PackageDeck";
 import { StartingPrice } from "@/components/zan/page/Price";
 import { ProjectPanel } from "@/components/zan/page/ProjectPanel";
@@ -23,6 +23,7 @@ import {
   type ServicePage,
 } from "@/constants/pages";
 import { servicePackages } from "@/constants/pricing";
+import { getServiceHero } from "@/constants/serviceHero";
 import { ctas, faqIntro, faqsForService, processSteps, projects, techDomains } from "@/constants/zan";
 import { pageMetadata } from "@/lib/metadata";
 import { faqSchema, jsonLd, serviceSchema } from "@/lib/schema";
@@ -73,6 +74,10 @@ export default async function ServiceDetailPage({ params }: RouteParams) {
     .map((id) => techDomains.find((d) => d.id === id))
     .filter((d) => d !== undefined);
   const relatedWork = projects.filter((p) => p.category === page.priceKey);
+  /* One photograph of the work itself under the hero copy. All sixteen pages
+     have one; the lookup still returns undefined rather than a placeholder if
+     a seventeenth is ever added before its picture is. */
+  const hero = getServiceHero(page.priceKey);
   /* Three of the sixteen pages have a question set of their own. The rest show
      no section rather than a borrowed one. */
   const faqs = faqsForService[page.priceKey] ?? [];
@@ -127,6 +132,7 @@ export default async function ServiceDetailPage({ params }: RouteParams) {
         lead={page.description}
         trail={trailFor(page)}
         aside={aside}
+        media={hero && <PageHeroPhoto photo={hero} />}
       >
         <div className="mt-9 flex flex-wrap items-center gap-3">
           {/* `from` carries this page over to the enquiry form, which lives on

@@ -8,22 +8,28 @@ import { CaseCaption, CaseMedia, IndustryTile, type Tone } from "@/components/za
 /** Tones for the eight industry cards, so neighbours never match. */
 const TONES: readonly Tone[] = ["soft", "paper", "brand", "surface", "paper", "soft", "surface", "brand"];
 
-/** The case studies that carry sector imagery. */
+/** The case studies that carry sector imagery: all five of them. */
 const CASES = projects.filter((p) => p.screenshot);
 
-/** Two industries, then a case study — so the imagery is spread through the deck. */
+/* Industries, then a case study, so the imagery is spread through the deck and
+   no two cases sit side by side. The order also keeps the two pairs that share
+   a subject apart: the logistics case and the logistics sector are both a
+   warehouse, and the fashion case and the e-commerce sector are both retail.
+   Neighbours in the rotator, and rows in the reduced-motion grid, would
+   otherwise read as the same picture twice. */
 const SLOTS: readonly { kind: "industry" | "case"; i: number }[] = [
   { kind: "industry", i: 0 },
-  { kind: "case", i: 0 },
+  { kind: "case", i: 2 },
   { kind: "industry", i: 1 },
   { kind: "industry", i: 2 },
   { kind: "case", i: 1 },
   { kind: "industry", i: 3 },
-  { kind: "industry", i: 4 },
-  { kind: "case", i: 2 },
-  { kind: "industry", i: 5 },
-  { kind: "industry", i: 6 },
   { kind: "case", i: 3 },
+  { kind: "industry", i: 4 },
+  { kind: "industry", i: 5 },
+  { kind: "case", i: 4 },
+  { kind: "industry", i: 6 },
+  { kind: "case", i: 0 },
   { kind: "industry", i: 7 },
 ];
 
@@ -49,10 +55,10 @@ const ITEMS: CarouselItem[] = SLOTS.flatMap((slot): CarouselItem[] => {
 });
 
 /**
- * Industries — the eight sectors interleaved with the four case studies that
- * have imagery, as a deck you turn: a 3D rotator on the desktop, a snapping
- * swipe track on a phone, and a plain grid of all twelve for anyone who
- * prefers reduced motion.
+ * Industries — the eight sectors interleaved with the five case studies, as a
+ * deck you turn: a 3D rotator on the desktop, a snapping swipe track on a
+ * phone, and a plain grid of all thirteen for anyone who prefers reduced
+ * motion.
  */
 export function Industries() {
   return (

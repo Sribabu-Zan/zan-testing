@@ -12,7 +12,7 @@ import { gsap, MQ } from "@/lib/gsap";
      translate3d + rotateY per card from a single continuous position, so the
      deck curves away on both sides. Driven by pointer drag, horizontal
      wheel/trackpad, clicking a side card, the prev/next buttons, the dots and
-     the arrow keys. It loops: card 12 is followed by card 1.
+     the arrow keys. It loops: the last card is followed by the first.
    • <768px: the same <ul> is a CSS scroll-snap track — one card per screen,
      native momentum, swipeable, the same controls.
    • prefers-reduced-motion: reduce: the same <ul> is a plain grid of all the

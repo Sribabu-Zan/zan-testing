@@ -40,7 +40,7 @@ const images: readonly ZoomImage[] = [
     lg: { x: 5, y: 27.5, w: 20, h: 25, scale: 6 },
   },
   {
-    src: "/images/professional/logistics.jpg",
+    src: "/images/professional/warehouse.jpg",
     side: "a",
     sm: { x: -32, y: 31, w: 30, h: 16, scale: 4.5 },
     lg: { x: -22.5, y: 27.5, w: 30, h: 25, scale: 8 },

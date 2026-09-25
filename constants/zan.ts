@@ -662,10 +662,29 @@ export interface Project {
   /** For generated artwork when there is no image. */
   hue: number;
   pattern: "grid" | "arc" | "mesh" | "orbit";
-  /** Sector imagery (stock), as the production site pairs it. Absent for the
-   *  fitness app on purpose: nothing available depicts it. */
+  /** Sector imagery (stock), as the production site pairs it. */
   screenshot?: { src: string; width: number; height: number };
 }
+
+/* The five pictures under `screenshot`, and why each one is a place rather
+   than a screen. A product-looking screenshot on a card headed "Enterprise
+   Logistics Dashboard" reads as the thing we delivered, and it is not: these
+   are stock photographs of the sector the engagement was in, paired with a
+   case study exactly as the note at the top of this file allows. What the
+   engagement produced is written out underneath in `solution` and `results`.
+
+   Each file is 1600 x 1000 JPEG, cropped so the subject sits in the middle of
+   the frame: the work wall crops a ~2.8:1 band out of the middle, the case
+   panel a 4:3 and the industries carousel a 3:4, and none of those may cut
+   through the subject. `source` is the Pexels URL the file came from, a record
+   of provenance, not a credit the page owes (Pexels allows commercial use with
+   no attribution).
+
+     fashion-retail     pexels.com/photo/3965545   a boutique's rail of clothes
+     support-desk       pexels.com/photo/7709277   a headset over a closed laptop
+     warehouse          pexels.com/photo/5156696   a racking aisle being worked
+     fitness-studio     pexels.com/photo/37573625  mats laid out on a studio floor
+     campaign-planning  pexels.com/photo/7710055   a flip chart of campaign notes */
 
 export const workIntro = {
   eyebrow: "Selected work",
@@ -695,7 +714,7 @@ export const projects: readonly Project[] = [
     techStack: ["React", "Node.js", "Express", "MongoDB", "Stripe", "Redis", "AWS S3"],
     hue: 265,
     pattern: "grid",
-    screenshot: { src: "/images/professional/ecommerce.jpg", width: 2400, height: 1350 },
+    screenshot: { src: "/images/professional/fashion-retail.jpg", width: 1600, height: 1000 },
   },
   {
     id: "ai-customer-support-bot",
@@ -718,7 +737,7 @@ export const projects: readonly Project[] = [
     techStack: ["Python", "OpenAI API", "LangChain", "FastAPI", "PostgreSQL", "Redis"],
     hue: 250,
     pattern: "orbit",
-    screenshot: { src: "/images/professional/dashboard2.jpg", width: 2400, height: 1709 },
+    screenshot: { src: "/images/professional/support-desk.jpg", width: 1600, height: 1000 },
   },
   {
     id: "enterprise-logistics-dashboard",
@@ -741,7 +760,7 @@ export const projects: readonly Project[] = [
     techStack: ["Next.js", "TypeScript", "PostgreSQL", "Prisma", "Docker", "AWS ECS"],
     hue: 282,
     pattern: "mesh",
-    screenshot: { src: "/images/professional/logistics.jpg", width: 2400, height: 1599 },
+    screenshot: { src: "/images/professional/warehouse.jpg", width: 1600, height: 1000 },
   },
   {
     id: "health-fitness-app",
@@ -764,6 +783,7 @@ export const projects: readonly Project[] = [
     techStack: ["React Native", "Firebase", "Node.js", "HealthKit", "Google Fit API"],
     hue: 236,
     pattern: "arc",
+    screenshot: { src: "/images/professional/fitness-studio.jpg", width: 1600, height: 1000 },
   },
   {
     id: "b2b-lead-generation",
@@ -786,7 +806,7 @@ export const projects: readonly Project[] = [
     techStack: ["Google Ads", "LinkedIn Ads", "HubSpot", "GA4", "SEMrush", "Ahrefs"],
     hue: 300,
     pattern: "grid",
-    screenshot: { src: "/images/professional/dashboard.jpg", width: 2400, height: 1600 },
+    screenshot: { src: "/images/professional/campaign-planning.jpg", width: 1600, height: 1000 },
   },
 ];
 

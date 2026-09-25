@@ -1,15 +1,25 @@
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
+import { getServiceArt } from "@/constants/serviceArt";
 import { ZanIcon } from "@/components/zan/ui/icons";
-import type { Client, Practice, Project, ServiceItem } from "@/constants/zan";
+import type { Practice, Project, ServiceItem } from "@/constants/zan";
 import { cn } from "@/lib/utils";
 import { ProjectArt } from "./ProjectArt";
 import { SiteLink } from "./SiteLink";
 
 /* ───────────────────────────────────────────────────────────────────────────
-   The three kinds of card on the work wall — a case study, a client and a
-   service — all real content. Each lifts on hover (and on keyboard focus for
-   the linked ones) and reveals one more detail.
+   The two kinds of card on the work wall — a case study and a service — both
+   real content. Each lifts on hover (and on keyboard focus) and reveals one
+   more detail.
+
+   Both are built the same way: a picture across the top of the card, a label
+   chipped onto its corner, then the words underneath. A case study shows the
+   photograph of its sector, a service the photograph from its own page
+   (constants/serviceHero.ts, through getServiceArt), so the wall reads as one
+   set of cards rather than two kinds side by side.
+
+   The client marks are not here: a logo is not a project, and the wall's
+   heading says "Projects we have delivered". They live in Partners.
 
    Hover uses the `translate` property, so it composes with the row's drift
    transform rather than fighting it.
@@ -23,6 +33,16 @@ const linkFocus = "focus-visible:-translate-y-2.5 focus-visible:shadow-float";
 
 const mono = "font-mono text-[0.6875rem] uppercase tracking-[0.14em]";
 
+/* What the picture band asks next/image for. The band is the card's full
+   width, and wall.css gives a card max(19rem, 26vw) from 1024px up — so 26vw
+   alone understates it until the viewport passes 1170px, which is where that
+   max() changes hands. Below 379px the card is 76vw rather than 18rem. The
+   band is wider than it is tall (~2.8:1) against a 1.6:1 file, so the crop
+   takes the file's full width and its height is what gets cut: the width the
+   browser needs is the card's own. */
+const bandSizes =
+  "(min-width: 1170px) 26vw, (min-width: 1024px) 19rem, (min-width: 768px) 19.5rem, (min-width: 379px) 18rem, 76vw";
+
 /* ── Case study ───────────────────────────────────────────────────────────── */
 
 export function CaseCard({ project }: { project: Project }) {
@@ -35,7 +55,7 @@ export function CaseCard({ project }: { project: Project }) {
             src={project.screenshot.src}
             alt=""
             fill
-            sizes="(min-width: 1024px) 26vw, (min-width: 768px) 19.5rem, 76vw"
+            sizes={bandSizes}
             className="object-cover transition-transform duration-700 ease-out-expo group-hover/card:scale-[1.05]"
           />
         ) : (
@@ -81,41 +101,6 @@ export function CaseCard({ project }: { project: Project }) {
   );
 }
 
-/* ── Client ───────────────────────────────────────────────────────────────── */
-
-export function ClientCard({ client }: { client: Client }) {
-  return (
-    <div className={cn(cardBase, "bg-bg text-ink")}>
-      {/* The logo exactly as supplied, on its white plate. */}
-      <div className="relative min-h-0 flex-1 overflow-hidden bg-bg">
-        <Image
-          src={client.src}
-          alt=""
-          fill
-          sizes="(min-width: 1024px) 22vw, (min-width: 768px) 17rem, 66vw"
-          className="scale-[1.2] object-contain transition-[scale] duration-700 ease-out-expo group-hover/card:scale-[1.28]"
-        />
-      </div>
-      <div className="border-t border-line px-4 py-3 lg:px-5 lg:py-4">
-        <p className="text-[0.9375rem] font-semibold leading-snug lg:text-body">{client.name}</p>
-        <p className="line-clamp-1 text-[0.8125rem] text-muted">{client.sector}</p>
-      </div>
-
-      {/* Detail reveal */}
-      <span
-        className={cn(
-          mono,
-          "absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-1 text-brand-ink",
-          "translate-y-1 opacity-0 transition-[opacity,translate] duration-500 ease-out-expo group-hover/card:translate-y-0 group-hover/card:opacity-100",
-        )}
-      >
-        <span aria-hidden="true" className="size-1.5 rounded-full bg-brand" />
-        Client
-      </span>
-    </div>
-  );
-}
-
 /* ── Service ──────────────────────────────────────────────────────────────── */
 
 export type ServiceTone = "soft" | "paper" | "surface" | "brand";
@@ -137,23 +122,48 @@ export function ServiceCard({
   tone: ServiceTone;
 }) {
   const onBrand = tone === "brand";
+  // The service's own photograph, the same file the top of its page uses. The
+  // glyph below is what a service falls back to until one has been shot.
+  const art = getServiceArt(service.id);
   return (
-    <SiteLink href={service.href} className={cn(cardBase, linkFocus, TONES[tone], "justify-between p-5 lg:p-6")}>
-      <div className="flex items-start justify-between gap-3">
-        <span
-          className={cn(
-            "grid size-11 shrink-0 place-items-center rounded-2xl lg:size-12",
-            onBrand ? "bg-on-brand/15 text-on-brand" : "bg-bg text-brand-ink shadow-lift",
-          )}
-        >
-          <ZanIcon name={service.icon} className="size-5 lg:size-6" />
-        </span>
-        <span className={cn(mono, "pt-1 text-right", onBrand ? "text-on-brand/80" : "text-muted")}>
-          {practice.title}
-        </span>
-      </div>
+    <SiteLink
+      href={service.href}
+      className={cn(cardBase, linkFocus, TONES[tone], "justify-between", art ? "" : "p-5 lg:p-6")}
+    >
+      {art ? (
+        // The same band a case study leads with: 42% of the card, the label
+        // chipped onto the corner, and the picture easing in on hover.
+        <div className="relative h-[42%] shrink-0 overflow-hidden bg-surface">
+          <Image
+            src={art.src}
+            alt=""
+            fill
+            sizes={bandSizes}
+            className="object-cover transition-transform duration-700 ease-out-expo group-hover/card:scale-[1.05]"
+          />
+          <span
+            className={cn(mono, "absolute top-3 left-3 rounded-full border border-line bg-bg px-2.5 py-1 text-ink")}
+          >
+            {practice.title}
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-start justify-between gap-3">
+          <span
+            className={cn(
+              "grid size-11 shrink-0 place-items-center rounded-2xl lg:size-12",
+              onBrand ? "bg-on-brand/15 text-on-brand" : "bg-bg text-brand-ink shadow-lift",
+            )}
+          >
+            <ZanIcon name={service.icon} className="size-5 lg:size-6" />
+          </span>
+          <span className={cn(mono, "pt-1 text-right", onBrand ? "text-on-brand/80" : "text-muted")}>
+            {practice.title}
+          </span>
+        </div>
+      )}
 
-      <div>
+      <div className={art ? "min-h-0 flex-1 p-4 lg:p-5" : ""}>
         <h3 className="text-h3 font-semibold text-balance">{service.title}</h3>
         <p className={cn("mt-1.5 text-small font-medium", onBrand ? "text-on-brand/85" : "text-brand-ink")}>
           {service.tagline}
